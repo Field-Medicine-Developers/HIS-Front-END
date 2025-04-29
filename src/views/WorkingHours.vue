@@ -296,17 +296,15 @@ export default {
         // Format the time to match TimeOnly format and ensure 24H format
         const formatTimeTo24H = (time) => {
           const [hours, minutes] = time.split(':')
-          return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00`
+          return `${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}`
         }
 
         const formattedData = {
           shiftName: this.formData.shiftName,
-          workingHoursResponse: {
-            startTime: formatTimeTo24H(this.formData.startTime),
-            endTime: formatTimeTo24H(this.formData.endTime),
-            workingDay: this.formData.workingDay,
-            medicalStaffId: this.formData.medicalStaffId
-          }
+          startTime: formatTimeTo24H(this.formData.startTime),
+          endTime: formatTimeTo24H(this.formData.endTime),
+          workingDay: this.formData.workingDay,
+          medicalStaffId: this.formData.medicalStaffId
         }
 
         if (this.editingShift) {

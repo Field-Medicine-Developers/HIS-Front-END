@@ -34,11 +34,11 @@
             </div>
             <div class="info-row">
               <span class="label">الطبيب:</span>
-              <span class="value">{{ getDoctorName(diagnosis.medicalStaffId) }}</span>
+              <span class="value">{{ diagnosis.medicalStaff.user.firstName }} {{ diagnosis.medicalStaff.user.secondName }} {{ diagnosis.medicalStaff.user.thirdName }}</span>
             </div>
             <div class="info-row">
               <span class="label">القسم:</span>
-              <span class="value">{{ diagnosis.staffSectionId }}</span>
+              <span class="value">{{ diagnosis.staffSections.sectionName }}</span>
             </div>
             <div class="info-row" v-if="diagnosis.notes">
               <span class="label">ملاحظات:</span>
@@ -305,7 +305,7 @@ export default {
             PageSize: 100
           }
         });
-        this.medicalStaff = response.data.items || [];
+        this.medicalStaff = response.data || [];
       } catch (error) {
         this.errorMessage = 'حدث خطأ أثناء جلب بيانات الكادر الطبي';
       } finally {
@@ -369,8 +369,8 @@ export default {
     async fetchDiagnoses() {
       try {
         this.loading = true;
-        const response = await this.$axios.get('/InitialDiagnosis/GetAllInitialDiagnoses');
-        this.diagnoses = response.data || [];
+        const response = await this.$axios.get('/InitialExamination/GetAllInitialExamination');
+        this.diagnoses = response.data.items || [];
       } catch (error) {
         this.errorMessage = 'حدث خطأ أثناء جلب بيانات الفحوصات';
       } finally {
@@ -383,15 +383,11 @@ export default {
       return reviewer ? `${reviewer.firstName} ${reviewer.secondName} ${reviewer.thirdName} ${reviewer.surName}` : 'غير معروف';
     },
 
-    getDoctorName(doctorId) {
-      const doctor = this.medicalStaff.find(d => d.id === doctorId);
-      return doctor ? `${doctor.firstName} ${doctor.secondName} ${doctor.thirdName}` : 'غير معروف';
-    },
 
     formatDate(dateString) {
       if (!dateString) return '';
       const date = new Date(dateString);
-      return date.toLocaleDateString('ar-SA');
+      return date.toLocaleDateString();
     },
 
     viewDetails(diagnosis) {
