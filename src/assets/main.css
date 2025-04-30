@@ -267,3 +267,18 @@ body {
   border-radius: 8px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
+.nav-item.logout-button {
+  margin-top: auto; 
+  background-color: transparent;
+  border: none;
+  text-align: right;
+  cursor: pointer;
+  transition:all 0.3s ease;
+}
+.nav-item.logout-button:hover {
+  background-color: rgba(255, 255, 255, 0.2); 
+}
+.nav-item.logout-button .nav-text span {
+  font-weight: 500;
+}
+

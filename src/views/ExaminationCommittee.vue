@@ -23,7 +23,7 @@
       <div v-else class="cards-grid">
         <div v-for="diagnosis in diagnoses" :key="diagnosis.id" class="card">
           <div class="card-header">
-            <h3>فحص رقم: {{ diagnosis.id }}</h3>
+            <h3>رمز الفحص:{{ diagnosis.randomCode || " غير متوفر " }}</h3>
             <span class="date">{{ formatDate(diagnosis.createdAt) }}</span>
           </div>
           <div class="card-content">
@@ -237,6 +237,119 @@
       </div>
     </div>
   </div>
+  <!-- Details Modal -->
+<div v-if="showDetailsModal" class="modal-overlay" @click="closeDetailsModal">
+  <div class="modal-content details-modal" @click.stop>
+    <div class="modal-header">
+      <h2>تفاصيل الفحص الطبي</h2>
+      <button class="close-button" @click="closeDetailsModal">×</button>
+    </div>
+    <div class="details-content" v-if="selectedDiagnosis">
+      <div class="details-section">
+        <h3>معلومات المراجع</h3>
+        <div class="info-row">
+          <span class="label">الاسم:</span>
+          <span class="value">{{ getReviewerName(selectedDiagnosis.reviewerId) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">رقم الحجز:</span>
+          <span class="value">{{ selectedDiagnosis.reviewer.bookNumber }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">تاريخ الحجز:</span>
+          <span class="value">{{ formatDate(selectedDiagnosis.reviewer.bookDate) }}</span>
+        </div>
+      </div>
+
+      <div class="details-section">
+        <h3>معلومات الطبيب</h3>
+        <div class="info-row">
+          <span class="label">الطبيب:</span>
+          <span class="value">{{ selectedDiagnosis.medicalStaff.user.firstName }} {{ selectedDiagnosis.medicalStaff.user.secondName }} {{ selectedDiagnosis.medicalStaff.user.thirdName }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">التخصص:</span>
+          <span class="value">{{ selectedDiagnosis.medicalStaff.specialization }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">القسم:</span>
+          <span class="value">{{ selectedDiagnosis.staffSections.sectionName }}</span>
+        </div>
+      </div>
+
+      <div class="details-section">
+        <h3>المعلومات الطبية</h3>
+        <div class="info-row">
+          <span class="label">ضغط الدم:</span>
+          <span class="value">{{ selectedDiagnosis.bloodPressure || 'غير متوفر' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">الوزن:</span>
+          <span class="value">{{ selectedDiagnosis.weight || 'غير متوفر' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">تشبع الأكسجين:</span>
+          <span class="value">{{ selectedDiagnosis.oxygenSaturation || 'غير متوفر' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">درجة الحرارة:</span>
+          <span class="value">{{ selectedDiagnosis.temperature || 'غير متوفر' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">النبض:</span>
+          <span class="value">{{ selectedDiagnosis.pulse || 'غير متوفر' }}</span>
+        </div>
+      </div>
+
+      <div class="details-section">
+        <h3>التشخيص والملاحظات</h3>
+        <div class="info-row">
+          <span class="label">الأمراض المزمنة:</span>
+          <span class="value">{{ selectedDiagnosis.chronicDiseases || 'لا يوجد' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">الأمراض المعدية:</span>
+          <span class="value">{{ selectedDiagnosis.communicableDiseases || 'لا يوجد' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">الحساسية:</span>
+          <span class="value">{{ selectedDiagnosis.allergies || 'لا يوجد' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">حساسية الأدوية:</span>
+          <span class="value">{{ selectedDiagnosis.drugAllergies || 'لا يوجد' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">أمراض الجلد:</span>
+          <span class="value">{{ selectedDiagnosis.skinDiseases || 'لا يوجد' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">محول إلى:</span>
+          <span class="value">{{ selectedDiagnosis.referredToParty || 'غير محول' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">ملاحظات:</span>
+          <span class="value">{{ selectedDiagnosis.notes || 'لا توجد ملاحظات' }}</span>
+        </div>
+      </div>
+
+      <div class="details-section">
+        <h3>معلومات إضافية</h3>
+        <div class="info-row">
+          <span class="label">تاريخ الفحص:</span>
+          <span class="value">{{ formatDate(selectedDiagnosis.createdAt) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">رقم الفحص:</span>
+          <span class="value">{{ selectedDiagnosis.id }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="close-details-btn" @click="closeDetailsModal">إغلاق</button>
+    </div>
+  </div>
+</div>
 </template>
 
 <script>
@@ -246,6 +359,8 @@ export default {
   data() {
     return {
       showModal: false,
+      showDetailsModal: false,
+      selectedDiagnosis: null, 
       formData: {
         reviewerId: '',
         bloodPressure: '',
@@ -278,6 +393,15 @@ export default {
   },
 
   methods: {
+    viewDetails(diagnosis) {
+      this.selectedDiagnosis = diagnosis;
+      this.showDetailsModal = true;
+    },
+
+    closeDetailsModal() {
+      this.showDetailsModal = false;
+      this.selectedDiagnosis = null;
+    },
     async fetchReviewers() {
       try {
         this.loading = true;
@@ -388,11 +512,6 @@ export default {
       const date = new Date(dateString);
       return date.toLocaleDateString();
     },
-
-    viewDetails(diagnosis) {
-      // Implement view details functionality
-      console.log('Viewing details for diagnosis:', diagnosis);
-    }
   },
 
   mounted() {
@@ -809,5 +928,121 @@ textarea {
 .examination-form {
   display: grid;
   gap: 20px;
+}
+/* Details Modal Styles */
+.details-modal {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 900px;
+  max-height: 85vh;
+  overflow-y: auto;
+  position: relative;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.details-content {
+  margin-bottom: 20px;
+}
+
+.details-section {
+  margin-bottom: 25px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.details-section h3 {
+  margin: 0 0 15px;
+  color: #2c3e50;
+  font-size: 20px;
+  font-weight: 600;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 8px;
+}
+
+.details-section .info-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 10px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+}
+
+.details-section .info-row:hover {
+  transform: translateX(5px);
+}
+
+.details-section .label {
+  font-weight: 600;
+  color: #2c3e50;
+  min-width: 150px;
+  border-right: 1px solid #e0e0e0;
+  padding-right: 15px;
+  margin-right: 15px;
+}
+
+.details-section .value {
+  color: #34495e;
+  flex: 1;
+  font-size: 15px;
+}
+
+.close-details-btn {
+  padding: 12px 24px;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.close-details-btn:hover {
+  background-color: #2980b9;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Responsive adjustments for details modal */
+@media (max-width: 768px) {
+  .details-modal {
+    width: 95%;
+    padding: 20px;
+  }
+
+  .details-section .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .details-section .label {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 5px;
+    margin-right: 0;
+    min-width: auto;
+  }
+
+  .details-section .value {
+    padding-left: 0;
+  }
 }
 </style> 

@@ -1,14 +1,23 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-import Sidebar from './components/Sidebar.vue'
-import Header from './components/Header.vue'
+import { useRouter, useRoute } from 'vue-router'
+
+
+const router = useRouter()
+const route = useRoute()
+
+
+const logout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('userData')
+
+  router.push('/login')
+}
 </script>
 
 <template>
   <div class="container">
-    <!-- Sidebar -->
-    <div class="sidebar">
+    <div v-if="route.path !== '/login'" class="sidebar">
       <div class="sidebar-header">
         <img src="./assets/logo.png" alt="HIS System" class="logo" />
         <h2>HIS System</h2>
@@ -63,16 +72,23 @@ import Header from './components/Header.vue'
             <p class="nav-description">إدارة لجان الفحص والتقييم الطبي</p>
           </div>
         </router-link>
+        <button @click="logout" class="nav-item logout-button">
+          <i class="pi pi-sign-out text-red-600"></i>
+          <div class="nav-text">
+            <span class="text-red-600">تسجيل الخروج</span>
+            <p class="nav-description">الخروج من النظام</p>
+          </div>
+        </button>
       </nav>
     </div>
 
     <!-- Main Content -->
-    <div class="content">
+    <div :class="{ 'content': true, 'full-width': route.path === '/login' }">
       <router-view></router-view>
     </div>
   </div>
 </template>
 
-<style>
+<style scoped>
 @import './assets/main.css';
 </style>
