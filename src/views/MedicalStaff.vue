@@ -1,7 +1,7 @@
 <template>
   <div class="medical-staff">
     <h1>إدارة الكادر الطبي</h1>
-    
+
     <!-- Loading Indicator -->
     <!-- <div v-if="loading" class="loading-overlay">
       <div class="loading-spinner"></div>
@@ -10,23 +10,27 @@
      -->
     <!-- Add Staff Button -->
     <div class="add-staff-button">
-      <button @click="showModal = true" class="add-btn">إضافة كادر طبي جديد</button>
+      <button @click="showModal = true" class="add-btn">
+        
+        <i class="pi pi-user-plus"></i>  إضافة كادر طبي جديد
+
+      </button>
     </div>
-    
+
     <!-- Filters -->
     <div class="filters">
       <div class="filter-group">
-        <input 
-          type="text" 
-          v-model="filters.fullName" 
+        <input
+          type="text"
+          v-model="filters.fullName"
           placeholder="البحث بالاسم"
           @input="onFilterChange"
         />
       </div>
       <div class="filter-group">
-        <input 
-          type="text" 
-          v-model="filters.phoneNumber" 
+        <input
+          type="text"
+          v-model="filters.phoneNumber"
           placeholder="البحث برقم الهاتف"
           @input="onFilterChange"
         />
@@ -73,7 +77,10 @@
           </template>
           <template v-else>
             <tr v-for="staff in staffList" :key="staff.id">
-              <td>{{ staff.user.firstName }} {{ staff.user.secondName }} {{ staff.user.thirdName }}</td>
+              <td>
+                {{ staff.user.firstName }} {{ staff.user.secondName }}
+                {{ staff.user.thirdName }}
+              </td>
               <td>{{ staff.user.phoneNumber }}</td>
               <td>{{ staff.specialization }}</td>
               <td>{{ staff.jobTitle }}</td>
@@ -86,12 +93,18 @@
               </td>
               <td>
                 <button @click="showPrivateInputs(staff)" class="details-btn">
-                  عرض المدخلات ({{ staff.privateMedicalStaffInputs?.length || 0 }})
+                  عرض المدخلات ({{
+                    staff.privateMedicalStaffInputs?.length || 0
+                  }})
                 </button>
               </td>
               <td>
-                <button @click="editStaff(staff)" class="edit-btn">تعديل</button>
-                <button @click="deleteStaff(staff.id)" class="delete-btn">حذف</button>
+                <button @click="editStaff(staff)" class="edit-btn">
+                  تعديل
+                </button>
+                <button @click="deleteStaff(staff.id)" class="delete-btn">
+                  حذف
+                </button>
               </td>
             </tr>
           </template>
@@ -101,8 +114,8 @@
 
     <!-- Pagination -->
     <div class="pagination">
-      <button 
-        v-for="page in pagination.totalPages" 
+      <button
+        v-for="page in pagination.totalPages"
         :key="page"
         @click="onPageChange(page)"
         :class="{ active: page === pagination.page }"
@@ -115,16 +128,16 @@
     <div v-if="showModal" class="modal-overlay" @click="resetForm">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>{{ editingStaff ? 'تعديل كادر طبي' : 'إضافة كادر طبي جديد' }}</h2>
+          <h2>{{ editingStaff ? "تعديل كادر طبي" : "إضافة كادر طبي جديد" }}</h2>
           <button class="close-button" @click="resetForm">&times;</button>
         </div>
-        
+
         <form @submit.prevent="handleSubmit" class="staff-form">
           <div class="form-group">
             <label for="image">الصورة الشخصية</label>
-            <input 
-              type="file" 
-              id="image" 
+            <input
+              type="file"
+              id="image"
               @change="handleImageChange"
               accept="image/*"
             />
@@ -132,10 +145,10 @@
 
           <div class="form-group">
             <label for="firstName">الاسم الأول</label>
-            <input 
-              type="text" 
-              id="firstName" 
-              v-model="formData.firstName" 
+            <input
+              type="text"
+              id="firstName"
+              v-model="formData.firstName"
               placeholder="الاسم الأول"
               required
             />
@@ -143,10 +156,10 @@
 
           <div class="form-group">
             <label for="secondName">الاسم الثاني</label>
-            <input 
-              type="text" 
-              id="secondName" 
-              v-model="formData.secondName" 
+            <input
+              type="text"
+              id="secondName"
+              v-model="formData.secondName"
               placeholder="الاسم الثاني"
               required
             />
@@ -154,10 +167,10 @@
 
           <div class="form-group">
             <label for="thirdName">الاسم الثالث</label>
-            <input 
-              type="text" 
-              id="thirdName" 
-              v-model="formData.thirdName" 
+            <input
+              type="text"
+              id="thirdName"
+              v-model="formData.thirdName"
               placeholder="الاسم الثالث"
               required
             />
@@ -165,32 +178,36 @@
 
           <div class="form-group">
             <label for="phoneNumber">رقم الهاتف *</label>
-            <input 
-              type="text" 
-              id="phoneNumber" 
-              v-model="formData.phoneNumber" 
-              placeholder="رقم الهاتف" 
+            <input
+              type="text"
+              id="phoneNumber"
+              v-model="formData.phoneNumber"
+              placeholder="رقم الهاتف"
               required
             />
           </div>
 
           <div class="form-group">
-            <label for="password">{{ editingStaff ? 'كلمة المرور الجديدة (اختياري)' : 'كلمة المرور *' }}</label>
-            <input 
-              type="password" 
-              id="password" 
-              v-model="formData.password" 
-              :placeholder="editingStaff ? 'كلمة المرور الجديدة' : 'كلمة المرور'"
+            <label for="password">{{
+              editingStaff ? "كلمة المرور الجديدة (اختياري)" : "كلمة المرور *"
+            }}</label>
+            <input
+              type="password"
+              id="password"
+              v-model="formData.password"
+              :placeholder="
+                editingStaff ? 'كلمة المرور الجديدة' : 'كلمة المرور'
+              "
               :required="!editingStaff"
             />
           </div>
 
           <div class="form-group">
             <label for="specialization">التخصص</label>
-            <input 
-              type="text" 
-              id="specialization" 
-              v-model="formData.specialization" 
+            <input
+              type="text"
+              id="specialization"
+              v-model="formData.specialization"
               placeholder="التخصص"
               required
             />
@@ -198,20 +215,20 @@
 
           <div class="form-group">
             <label for="address">العنوان</label>
-            <input 
-              type="text" 
-              id="address" 
-              v-model="formData.address" 
+            <input
+              type="text"
+              id="address"
+              v-model="formData.address"
               placeholder="العنوان"
             />
           </div>
 
           <div class="form-group">
             <label for="jobTitle">المسمى الوظيفي</label>
-            <input 
-              type="text" 
-              id="jobTitle" 
-              v-model="formData.jobTitle" 
+            <input
+              type="text"
+              id="jobTitle"
+              v-model="formData.jobTitle"
               placeholder="المسمى الوظيفي"
               required
             />
@@ -219,15 +236,15 @@
 
           <div class="form-group">
             <label for="staffSectionsId">القسم</label>
-            <select 
-              id="staffSectionsId" 
+            <select
+              id="staffSectionsId"
               v-model="formData.staffSectionsId"
               required
             >
               <option value="">اختر القسم</option>
-              <option 
-                v-for="section in sections" 
-                :key="section.id" 
+              <option
+                v-for="section in sections"
+                :key="section.id"
                 :value="section.id"
               >
                 {{ section.sectionName }}
@@ -238,13 +255,17 @@
           <!-- Working Hours Section -->
           <div class="form-section">
             <h3>ساعات العمل</h3>
-            <div v-for="(hour, index) in formData.workingHours" :key="index" class="working-hour-item">
+            <div
+              v-for="(hour, index) in formData.workingHours"
+              :key="index"
+              class="working-hour-item"
+            >
               <div class="form-group">
                 <label :for="'shiftName' + index">اسم الشفت</label>
-                <input 
+                <input
                   :id="'shiftName' + index"
-                  type="text" 
-                  v-model="hour.shiftName" 
+                  type="text"
+                  v-model="hour.shiftName"
                   placeholder="اسم الشفت"
                   required
                 />
@@ -252,52 +273,68 @@
 
               <div class="form-group">
                 <label :for="'startTime' + index">وقت البداية</label>
-                <input 
+                <input
                   :id="'startTime' + index"
-                  type="time" 
-                  v-model="hour.startTime" 
+                  type="time"
+                  v-model="hour.startTime"
                   required
                 />
               </div>
 
               <div class="form-group">
                 <label :for="'endTime' + index">وقت النهاية</label>
-                <input 
+                <input
                   :id="'endTime' + index"
-                  type="time" 
-                  v-model="hour.endTime" 
+                  type="time"
+                  v-model="hour.endTime"
                   required
                 />
               </div>
 
               <div class="form-group">
                 <label :for="'workingDay' + index">اليوم</label>
-                <select 
+                <select
                   :id="'workingDay' + index"
-                  v-model="hour.workingDay" 
+                  v-model="hour.workingDay"
                   required
                 >
-                  <option v-for="(day, value) in workingDays" :key="value" :value="value">
+                  <option
+                    v-for="(day, value) in workingDays"
+                    :key="value"
+                    :value="value"
+                  >
                     {{ day }}
                   </option>
                 </select>
               </div>
 
-              <button type="button" @click="removeWorkingHour(index)" class="remove-btn">حذف</button>
+              <button
+                type="button"
+                @click="removeWorkingHour(index)"
+                class="remove-btn"
+              >
+                حذف
+              </button>
             </div>
-            <button type="button" @click="addWorkingHour" class="add-hour-btn">إضافة شفت</button>
+            <button type="button" @click="addWorkingHour" class="add-hour-btn">
+              إضافة شفت
+            </button>
           </div>
 
           <!-- Private Inputs Section -->
           <div class="form-section">
             <h3>المدخلات الخاصة</h3>
-            <div v-for="(input, index) in formData.privateMedicalStaffInputs" :key="index" class="input-item">
+            <div
+              v-for="(input, index) in formData.privateMedicalStaffInputs"
+              :key="index"
+              class="input-item"
+            >
               <div class="form-group">
                 <label :for="'inputName' + index">اسم المدخل</label>
-                <input 
+                <input
                   :id="'inputName' + index"
-                  type="text" 
-                  v-model="input.inputName" 
+                  type="text"
+                  v-model="input.inputName"
                   placeholder="اسم المدخل"
                   required
                 />
@@ -305,12 +342,16 @@
 
               <div class="form-group">
                 <label :for="'inputType' + index">نوع المدخل</label>
-                <select 
+                <select
                   :id="'inputType' + index"
-                  v-model="input.inputType" 
+                  v-model="input.inputType"
                   required
                 >
-                  <option v-for="(label, type) in inputTypes" :key="type" :value="type">
+                  <option
+                    v-for="(label, type) in inputTypes"
+                    :key="type"
+                    :value="type"
+                  >
                     {{ label }}
                   </option>
                 </select>
@@ -318,27 +359,36 @@
 
               <div class="form-group">
                 <label :for="'defaultValue' + index">القيمة الافتراضية</label>
-                <input 
+                <input
                   :id="'defaultValue' + index"
-                  type="text" 
-                  v-model="input.defaultValue" 
+                  type="text"
+                  v-model="input.defaultValue"
                   placeholder="القيمة الافتراضية"
                 />
               </div>
 
               <div class="form-group">
                 <label class="checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    v-model="input.isRequired"
-                  />
+                  <input type="checkbox" v-model="input.isRequired" />
                   إلزامي
                 </label>
               </div>
 
-              <button type="button" @click="removePrivateInput(index)" class="remove-btn">حذف</button>
+              <button
+                type="button"
+                @click="removePrivateInput(index)"
+                class="remove-btn"
+              >
+                حذف
+              </button>
             </div>
-            <button type="button" @click="addPrivateInput" class="add-input-btn">إضافة مدخل</button>
+            <button
+              type="button"
+              @click="addPrivateInput"
+              class="add-input-btn"
+            >
+              إضافة مدخل
+            </button>
           </div>
 
           <div v-if="errorMessage" class="error-message">
@@ -350,8 +400,12 @@
           </div>
 
           <div class="form-actions">
-            <button type="submit" class="submit-button">{{ editingStaff ? 'تحديث' : 'حفظ' }}</button>
-            <button type="button" class="cancel-button" @click="resetForm">إلغاء</button>
+            <button type="submit" class="submit-button">
+              {{ editingStaff ? "تحديث" : "حفظ" }}
+            </button>
+            <button type="button" class="cancel-button" @click="resetForm">
+              إلغاء
+            </button>
           </div>
         </form>
       </div>
@@ -362,30 +416,48 @@
       <div class="modal-content delete-modal" @click.stop>
         <div class="modal-header">
           <h2>تأكيد الحذف</h2>
-          <button class="close-button" @click="closeDeleteModal">&times;</button>
+          <button class="close-button" @click="closeDeleteModal">
+            &times;
+          </button>
         </div>
-        
+
         <div class="delete-modal-content">
           <div class="delete-icon">
             <i class="fas fa-exclamation-triangle"></i>
           </div>
-          <p class="delete-message">هل أنت متأكد من حذف الكادر الطبي "{{ staffToDelete?.user.firstName }} {{ staffToDelete?.user.secondName }} {{ staffToDelete?.user.thirdName }}"؟</p>
+          <p class="delete-message">
+            هل أنت متأكد من حذف الكادر الطبي "{{
+              staffToDelete?.user.firstName
+            }}
+            {{ staffToDelete?.user.secondName }}
+            {{ staffToDelete?.user.thirdName }}"؟
+          </p>
           <p class="delete-warning">هذا الإجراء لا يمكن التراجع عنه</p>
-          
+
           <div class="delete-actions">
-            <button @click="confirmDelete" class="confirm-delete-btn">حذف</button>
-            <button @click="closeDeleteModal" class="cancel-delete-btn">إلغاء</button>
+            <button @click="confirmDelete" class="confirm-delete-btn">
+              حذف
+            </button>
+            <button @click="closeDeleteModal" class="cancel-delete-btn">
+              إلغاء
+            </button>
           </div>
         </div>
       </div>
     </div>
 
     <!-- Working Hours Modal -->
-    <div v-if="showWorkingHoursModal" class="modal-overlay" @click="closeWorkingHoursModal">
+    <div
+      v-if="showWorkingHoursModal"
+      class="modal-overlay"
+      @click="closeWorkingHoursModal"
+    >
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h2>ساعات العمل</h2>
-          <button class="close-button" @click="closeWorkingHoursModal">&times;</button>
+          <button class="close-button" @click="closeWorkingHoursModal">
+            &times;
+          </button>
         </div>
         <div class="modal-body">
           <table class="details-table">
@@ -398,7 +470,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(hour, index) in selectedStaff?.workingHours" :key="index">
+              <tr
+                v-for="(hour, index) in selectedStaff?.workingHours"
+                :key="index"
+              >
                 <td>{{ hour.shiftName }}</td>
                 <td>{{ hour.startTime }}</td>
                 <td>{{ hour.endTime }}</td>
@@ -411,11 +486,17 @@
     </div>
 
     <!-- Private Inputs Modal -->
-    <div v-if="showPrivateInputsModal" class="modal-overlay" @click="closePrivateInputsModal">
+    <div
+      v-if="showPrivateInputsModal"
+      class="modal-overlay"
+      @click="closePrivateInputsModal"
+    >
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h2>المدخلات الخاصة</h2>
-          <button class="close-button" @click="closePrivateInputsModal">&times;</button>
+          <button class="close-button" @click="closePrivateInputsModal">
+            &times;
+          </button>
         </div>
         <div class="modal-body">
           <table class="details-table">
@@ -431,12 +512,17 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(input, index) in selectedStaff?.privateMedicalStaffInputs" :key="index">
+              <tr
+                v-for="(
+                  input, index
+                ) in selectedStaff?.privateMedicalStaffInputs"
+                :key="index"
+              >
                 <td>{{ input.inputName }}</td>
                 <td>{{ inputTypes[input.inputType] }}</td>
                 <td>{{ input.defaultValue }}</td>
                 <td>{{ input.options }}</td>
-                <td>{{ input.isRequired ? 'نعم' : 'لا' }}</td>
+                <td>{{ input.isRequired ? "نعم" : "لا" }}</td>
                 <td>{{ input.minValue }}</td>
                 <td>{{ input.maxValue }}</td>
               </tr>
@@ -450,56 +536,56 @@
 
 <script>
 export default {
-  name: 'MedicalStaff',
+  name: "MedicalStaff",
   data() {
     return {
       formData: {
-        firstName: '',
-        secondName: '',
-        thirdName: '',
-        phoneNumber: '',
-        password: '',
-        specialization: '',
-        address: '',
-        jobTitle: '',
-        staffSectionsId: '',
+        firstName: "",
+        secondName: "",
+        thirdName: "",
+        phoneNumber: "",
+        password: "",
+        specialization: "",
+        address: "",
+        jobTitle: "",
+        staffSectionsId: "",
         role: 3, // Medical Staff
         workingHours: [],
         privateMedicalStaffInputs: [],
-        image: null
+        image: null,
       },
       staffList: [],
       sections: [],
       specializations: [],
       workingDays: {
-        1: 'الاثنين',
-        2: 'الثلاثاء',
-        3: 'الأربعاء',
-        4: 'الخميس',
-        5: 'الجمعة',
-        6: 'السبت',
-        7: 'الأحد'
+        1: "الاثنين",
+        2: "الثلاثاء",
+        3: "الأربعاء",
+        4: "الخميس",
+        5: "الجمعة",
+        6: "السبت",
+        7: "الأحد",
       },
       inputTypes: {
-        1: 'نص',
-        2: 'رقم',
-        3: 'تاريخ',
-        6: 'قائمة منسدلة',
-        8: 'DNA',
-        12: 'نص طويل'
+        1: "نص",
+        2: "رقم",
+        3: "تاريخ",
+        6: "قائمة منسدلة",
+        8: "DNA",
+        12: "نص طويل",
       },
-      errorMessage: '',
-      successMessage: '',
+      errorMessage: "",
+      successMessage: "",
       loading: false,
       pagination: {
         page: 1,
         pageSize: 10,
-        totalPages: 0
+        totalPages: 0,
       },
       filters: {
-        fullName: '',
-        phoneNumber: '',
-        specialization: ''
+        fullName: "",
+        phoneNumber: "",
+        specialization: "",
       },
       editingStaff: null,
       showModal: false,
@@ -507,8 +593,8 @@ export default {
       staffToDelete: null,
       showWorkingHoursModal: false,
       showPrivateInputsModal: false,
-      selectedStaff: null
-    }
+      selectedStaff: null,
+    };
   },
   created() {
     this.fetchStaff();
@@ -524,115 +610,159 @@ export default {
           PageSize: this.pagination.pageSize,
           fullName: this.filters.fullName,
           phoneNumber: this.filters.phoneNumber,
-          specialization: this.filters.specialization
+          specialization: this.filters.specialization,
         };
 
-        const response = await this.$axios.get('/MedicalStaff/GetAllMedicalStaff', { params });
+        const response = await this.$axios.get(
+          "/MedicalStaff/GetAllMedicalStaff",
+          { params }
+        );
         this.staffList = response.data.items || [];
         this.pagination.totalPages = response.data.totalPages || 0;
       } catch (error) {
-        console.error('Error fetching staff:', error);
-        this.errorMessage = 'حدث خطأ أثناء جلب بيانات الكادر الطبي';
+        console.error("Error fetching staff:", error);
+        this.errorMessage = "حدث خطأ أثناء جلب بيانات الكادر الطبي";
       } finally {
         this.loading = false;
       }
     },
     async fetchSections() {
       try {
-        const response = await this.$axios.get('/StaffSections/GetAllStaffSections', {
-          params: {
-            PageNumber: 1,
-            PageSize: 100
+        const response = await this.$axios.get(
+          "/StaffSections/GetAllStaffSections",
+          {
+            params: {
+              PageNumber: 1,
+              PageSize: 100,
+            },
           }
-        });
+        );
         this.sections = response.data.items || [];
       } catch (error) {
-        console.error('Error fetching sections:', error);
+        console.error("Error fetching sections:", error);
       }
     },
     async fetchSpecializations() {
       try {
-        const response = await this.$axios.get('/MedicalStaff/GetMyDiagnosis');
+        const response = await this.$axios.get("/MedicalStaff/GetMyDiagnosis");
         this.specializations = response.data || [];
       } catch (error) {
-        console.error('Error fetching specializations:', error);
+        console.error("Error fetching specializations:", error);
       }
     },
     async handleSubmit() {
       try {
-        this.errorMessage = '';
-        this.successMessage = '';
+        this.errorMessage = "";
+        this.successMessage = "";
 
         const formData = new FormData();
-        
+
         // Add basic fields
-        formData.append('FirstName', this.formData.firstName);
-        formData.append('SecondName', this.formData.secondName);
-        formData.append('ThirdName', this.formData.thirdName);
-        formData.append('PhoneNumber', this.formData.phoneNumber);
-        formData.append('Password', this.formData.password);
-        formData.append('Specialization', this.formData.specialization);
-        formData.append('Address', this.formData.address);
-        formData.append('JobTitle', this.formData.jobTitle);
-        formData.append('StaffSectionsId', this.formData.staffSectionsId);
-        formData.append('Role', this.formData.role);
+        formData.append("FirstName", this.formData.firstName);
+        formData.append("SecondName", this.formData.secondName);
+        formData.append("ThirdName", this.formData.thirdName);
+        formData.append("PhoneNumber", this.formData.phoneNumber);
+        formData.append("Password", this.formData.password);
+        formData.append("Specialization", this.formData.specialization);
+        formData.append("Address", this.formData.address);
+        formData.append("JobTitle", this.formData.jobTitle);
+        formData.append("StaffSectionsId", this.formData.staffSectionsId);
+        formData.append("Role", this.formData.role);
 
         // Add image if exists
         if (this.formData.image) {
-          formData.append('TheImage', this.formData.image);
+          formData.append("TheImage", this.formData.image);
         }
 
         // Add working hours
         if (this.formData.workingHours.length > 0) {
           this.formData.workingHours.forEach((hour, index) => {
-            formData.append(`WorkingHoursDto[${index}].shiftName`, hour.shiftName);
-            formData.append(`WorkingHoursDto[${index}].startTime`, hour.startTime);
+            formData.append(
+              `WorkingHoursDto[${index}].shiftName`,
+              hour.shiftName
+            );
+            formData.append(
+              `WorkingHoursDto[${index}].startTime`,
+              hour.startTime
+            );
             formData.append(`WorkingHoursDto[${index}].endTime`, hour.endTime);
-            formData.append(`WorkingHoursDto[${index}].workingDay`, hour.workingDay);
-            formData.append(`WorkingHoursDto[${index}].staffSectionsId`, this.formData.staffSectionsId);
+            formData.append(
+              `WorkingHoursDto[${index}].workingDay`,
+              hour.workingDay
+            );
+            formData.append(
+              `WorkingHoursDto[${index}].staffSectionsId`,
+              this.formData.staffSectionsId
+            );
           });
         }
 
         // Add private inputs
         if (this.formData.privateMedicalStaffInputs.length > 0) {
           this.formData.privateMedicalStaffInputs.forEach((input, index) => {
-            formData.append(`PrivateMedicalStaffInputs[${index}].inputName`, input.inputName);
-            formData.append(`PrivateMedicalStaffInputs[${index}].inputType`, input.inputType);
-            formData.append(`PrivateMedicalStaffInputs[${index}].defaultValue`, input.defaultValue);
-            formData.append(`PrivateMedicalStaffInputs[${index}].options`, input.options);
-            formData.append(`PrivateMedicalStaffInputs[${index}].isRequired`, input.isRequired);
-            formData.append(`PrivateMedicalStaffInputs[${index}].minValue`, input.minValue);
-            formData.append(`PrivateMedicalStaffInputs[${index}].maxValue`, input.maxValue);
+            formData.append(
+              `PrivateMedicalStaffInputs[${index}].inputName`,
+              input.inputName
+            );
+            formData.append(
+              `PrivateMedicalStaffInputs[${index}].inputType`,
+              input.inputType
+            );
+            formData.append(
+              `PrivateMedicalStaffInputs[${index}].defaultValue`,
+              input.defaultValue
+            );
+            formData.append(
+              `PrivateMedicalStaffInputs[${index}].options`,
+              input.options
+            );
+            formData.append(
+              `PrivateMedicalStaffInputs[${index}].isRequired`,
+              input.isRequired
+            );
+            formData.append(
+              `PrivateMedicalStaffInputs[${index}].minValue`,
+              input.minValue
+            );
+            formData.append(
+              `PrivateMedicalStaffInputs[${index}].maxValue`,
+              input.maxValue
+            );
           });
         }
 
         if (this.editingStaff) {
-          await this.$axios.put(`/MedicalStaff/PutMedicalStaff/${this.editingStaff.id}`, formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
+          await this.$axios.put(
+            `/MedicalStaff/PutMedicalStaff/${this.editingStaff.id}`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
             }
-          });
-          this.successMessage = 'تم تحديث الكادر الطبي بنجاح';
+          );
+          this.successMessage = "تم تحديث الكادر الطبي بنجاح";
         } else {
-          await this.$axios.post('/MedicalStaff/AddMedicalStaff', formData, {
+          await this.$axios.post("/MedicalStaff/AddMedicalStaff", formData, {
             headers: {
-              'Content-Type': 'multipart/form-data'
-            }
+              "Content-Type": "multipart/form-data",
+            },
           });
-          this.successMessage = 'تم إضافة الكادر الطبي بنجاح';
+          this.successMessage = "تم إضافة الكادر الطبي بنجاح";
         }
 
         this.resetForm();
         this.fetchStaff();
       } catch (error) {
-        this.errorMessage = error.response?.data?.message || 'حدث خطأ أثناء حفظ الكادر الطبي';
+        this.errorMessage =
+          error.response?.data?.message || "حدث خطأ أثناء حفظ الكادر الطبي";
       }
     },
     handleImageChange(event) {
       this.formData.image = event.target.files[0];
     },
     async deleteStaff(staffId) {
-      const staff = this.staffList.find(s => s.id === staffId);
+      const staff = this.staffList.find((s) => s.id === staffId);
       if (staff) {
         this.staffToDelete = staff;
         this.showDeleteModal = true;
@@ -640,14 +770,16 @@ export default {
     },
     async confirmDelete() {
       if (!this.staffToDelete) return;
-      
+
       try {
-        await this.$axios.delete(`/MedicalStaff/DeleteMedicalStaff/${this.staffToDelete.id}`);
-        this.successMessage = 'تم حذف الكادر الطبي بنجاح';
+        await this.$axios.delete(
+          `/MedicalStaff/DeleteMedicalStaff/${this.staffToDelete.id}`
+        );
+        this.successMessage = "تم حذف الكادر الطبي بنجاح";
         this.fetchStaff();
         this.closeDeleteModal();
       } catch (error) {
-        this.errorMessage = 'حدث خطأ أثناء حذف الكادر الطبي';
+        this.errorMessage = "حدث خطأ أثناء حذف الكادر الطبي";
       }
     },
     closeDeleteModal() {
@@ -661,7 +793,7 @@ export default {
         secondName: staff.user.secondName,
         thirdName: staff.user.thirdName,
         phoneNumber: staff.user.phoneNumber,
-        password: '', // لا نعرض كلمة المرور
+        password: "", // لا نعرض كلمة المرور
         specialization: staff.specialization,
         address: staff.address,
         jobTitle: staff.jobTitle,
@@ -669,26 +801,26 @@ export default {
         role: 3,
         workingHours: staff.workingHours || [],
         privateMedicalStaffInputs: staff.privateMedicalStaffInputs || [],
-        image: null
+        image: null,
       };
       this.showModal = true;
     },
     resetForm() {
       this.editingStaff = null;
       this.formData = {
-        firstName: '',
-        secondName: '',
-        thirdName: '',
-        phoneNumber: '',
-        password: '',
-        specialization: '',
-        address: '',
-        jobTitle: '',
-        staffSectionsId: '',
+        firstName: "",
+        secondName: "",
+        thirdName: "",
+        phoneNumber: "",
+        password: "",
+        specialization: "",
+        address: "",
+        jobTitle: "",
+        staffSectionsId: "",
         role: 3,
         workingHours: [],
         privateMedicalStaffInputs: [],
-        image: null
+        image: null,
       };
       this.showModal = false;
     },
@@ -701,15 +833,15 @@ export default {
       this.fetchStaff();
     },
     getSectionName(sectionId) {
-      const section = this.sections.find(s => s.id === sectionId);
-      return section ? section.sectionName : '';
+      const section = this.sections.find((s) => s.id === sectionId);
+      return section ? section.sectionName : "";
     },
     addWorkingHour() {
       this.formData.workingHours.push({
-        shiftName: '',
-        startTime: '',
-        endTime: '',
-        workingDay: 1
+        shiftName: "",
+        startTime: "",
+        endTime: "",
+        workingDay: 1,
       });
     },
     removeWorkingHour(index) {
@@ -717,13 +849,13 @@ export default {
     },
     addPrivateInput() {
       this.formData.privateMedicalStaffInputs.push({
-        inputName: '',
+        inputName: "",
         inputType: 1,
-        defaultValue: '',
-        options: '',
+        defaultValue: "",
+        options: "",
         isRequired: false,
         minValue: 0,
-        maxValue: 0
+        maxValue: 0,
       });
     },
     removePrivateInput(index) {
@@ -744,9 +876,9 @@ export default {
     closePrivateInputsModal() {
       this.selectedStaff = null;
       this.showPrivateInputsModal = false;
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <style scoped>
@@ -756,7 +888,9 @@ export default {
   margin: 0 auto;
 }
 
-h1, h2, h3 {
+h1,
+h2,
+h3 {
   text-align: center;
   color: #2c3e50;
   margin-bottom: 30px;
@@ -892,7 +1026,8 @@ label {
   font-weight: 500;
 }
 
-input, select {
+input,
+select {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
@@ -901,7 +1036,8 @@ input, select {
   transition: border-color 0.3s;
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
   outline: none;
   border-color: #2c3e50;
 }
@@ -1127,8 +1263,12 @@ input:focus, select:focus {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-overlay p {
@@ -1142,7 +1282,7 @@ input:focus, select:focus {
   .medical-staff {
     padding: 10px;
   }
-  
+
   .filters {
     flex-direction: column;
   }
@@ -1229,4 +1369,4 @@ input:focus, select:focus {
     background-position: -200% 0;
   }
 }
-</style> 
+</style>

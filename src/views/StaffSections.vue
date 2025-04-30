@@ -26,7 +26,7 @@
     
     <!-- Add Section Button -->
     <div class="add-section-button">
-      <button @click="showModal = true" class="add-btn">إضافة قسم جديد</button>
+      <button @click="showModal = true" class="add-btn"> <i class="pi pi-plus"></i> إضافة قسم جديد </button>
     </div>
     
     <!-- Filters -->

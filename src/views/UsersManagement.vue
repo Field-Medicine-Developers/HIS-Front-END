@@ -10,7 +10,7 @@
     
     <!-- Add User Button -->
     <div class="add-user-button">
-      <button @click="showModal = true" class="add-btn">إضافة مستخدم جديد</button>
+      <button @click="showModal = true" class="add-btn"><i class="pi pi-user-plus"></i> إضافة مستخدم جديد</button>
     </div>
     
     <!-- Filters -->

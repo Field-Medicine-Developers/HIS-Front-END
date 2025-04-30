@@ -5,7 +5,7 @@
     <!-- Add Reviewer Button -->
     <div class="add-reviewer-button">
       <button @click="showModal = true" class="add-btn">
-        <i class="pi pi-plus"></i> إضافة مراجع جديد
+        <i class="pi pi-user-plus"></i>إضافة مراجع جديد
       </button>
     </div>
     

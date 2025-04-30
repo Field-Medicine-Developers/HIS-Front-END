@@ -10,7 +10,7 @@
     
     <!-- Add Shift Button -->
     <div class="add-shift-button">
-      <button @click="showModal = true" class="add-btn">إضافة شفت جديد</button>
+      <button @click="showModal = true" class="add-btn"><i class="pi pi-user-plus"></i>إضافة شفت جديد</button>
     </div>
     
     <!-- Filters -->

@@ -5,10 +5,9 @@
     <!-- Add Examination Button -->
     <div class="add-examination-button">
       <button @click="showModal = true" class="add-btn">
-        <i class="pi pi-plus"></i> إضافة فحص جديد
+        <i class="pi pi-plus"></i>إضافة فحص جديد
       </button>
     </div>
-
     <!-- Examination Cards Section -->
     <div class="examination-cards">
       <div v-if="loading" class="loading-cards">
