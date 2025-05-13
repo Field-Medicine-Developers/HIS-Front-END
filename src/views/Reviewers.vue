@@ -58,7 +58,6 @@
       <table class="reviewers-table">
         <thead>
           <tr>
-            <th>رقم الملف</th>
             <th>الاسم الأول</th>
             <th>الاسم الثاني</th>
             <th>الاسم الثالث</th>
@@ -89,7 +88,6 @@
           </template>
           <template v-else>
             <tr v-for="reviewer in reviewers" :key="reviewer.id">
-              <td>{{ reviewer.id }}</td>
               <td>{{ reviewer.firstName }}</td>
               <td>{{ reviewer.secondName }}</td>
               <td>{{ reviewer.thirdName }}</td>
@@ -97,23 +95,25 @@
               <td>{{ reviewer.phoneNumber }}</td>
               <td>{{ getReviewerTypeLabel(reviewer.reviewerType) }}</td>
               <td>{{ reviewer.bookNumber }}</td>
-              <td>{{ reviewer.bookDate }}</td>
+              <td>{{ reviewer.bookDate?.split('T')[0] }}</td>
               <td>
                 <span >
                   {{ getStatusText(reviewer.reviewerType) }}
                 </span>
               </td>
               <td>
-                <button @click="editReviewer(reviewer)" class="edit-btn">
-                  <i class="pi pi-pencil"></i> تعديل
-                </button>
-                <button @click="confirmDelete(reviewer)" class="delete-btn">
-                  <i class="pi pi-trash"></i> حذف
-                </button>
-                <button @click="viewHistory(reviewer)" class="history-btn">
-                  <i class="pi pi-history"></i> السجل
-                </button>
-              </td>
+               <div style="display: flex; gap: 8px;">
+                 <button @click="editReviewer(reviewer)" class="edit-btn">
+                   <i class="pi pi-pencil"></i> تعديل
+                 </button>
+                 <button @click="confirmDelete(reviewer)" class="delete-btn">
+                   <i class="pi pi-trash"></i> حذف
+                 </button>
+                 <button @click="viewHistory(reviewer)" class="history-btn">
+                   <i class="pi pi-history"></i> السجل
+                 </button>
+               </div>
+             </td>             
             </tr>
           </template>
         </tbody>
@@ -421,8 +421,8 @@ export default {
   computed: {
     genders() {
       return [
-        { label: 'ذكر', value: 'Male' },
-        { label: 'أنثى', value: 'Female' }
+        { label: 'ذكر', value: 1 },
+        { label: 'أنثى', value: 2 }
       ]
     },
 
@@ -513,8 +513,11 @@ export default {
 
     editReviewer(reviewer) {
       this.editingReviewer = reviewer;
-      this.formData = { ...reviewer };
-      this.showModal = true;
+      this.formData = {
+       ...reviewer,
+       birthDate: reviewer.birthDate ? reviewer.birthDate.split('T')[0] : null,
+       bookDate: reviewer.bookDate ? reviewer.bookDate.split('T')[0] : null,
+        };      this.showModal = true;
     },
 
     confirmDelete(reviewer) {

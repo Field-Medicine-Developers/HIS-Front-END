@@ -459,12 +459,12 @@ export default {
       try {
         this.loading = true;
         const response = await this.$axios.get(`/StaffSections/GetStaffSectionById${section.id}`);
-        
+        console.log('Response from GetStaffSectionById:', response.data);
         if (response.status === 200) {
           this.editingSection = response.data;
           this.formData = {
-            sectionName: response.data.sectionName,
-            privateSectionInputs: response.data.privateSectionInputs || []
+            sectionName: response.data.data.sectionName,
+            privateSectionInputs: response.data.data.privateSectionInputs || []
           };
           this.showModal = true;
         } else {
