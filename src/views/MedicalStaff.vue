@@ -1565,4 +1565,18 @@ textarea:focus {
   box-shadow: 0 0 0 4px rgba(50, 129, 125, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
   outline: none;
 }
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000000;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #e74c3c; /* أحمر عند التحويم */
+}
+
 </style>

@@ -787,7 +787,19 @@ input:focus, select:focus {
   width: 90%;
   max-width: 800px;
   max-height: 90vh;
+  animation: fadeInUp 0.4s ease-in-out;
   overflow-y: auto;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
@@ -1318,8 +1330,6 @@ textarea:focus {
   background-color: #c0392b;
 }
 
-
-
 .add-hour-btn,
 .add-input-btn {
   margin-top: 10px;
@@ -1337,5 +1347,19 @@ textarea:focus {
 .add-input-btn:hover {
   background-color: #2c3e50e2;
 }
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000000;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #e74c3c; /* أحمر عند التحويم */
+}
+
 
 </style> 

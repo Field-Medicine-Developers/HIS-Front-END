@@ -837,6 +837,17 @@ select:focus {
   position: relative;
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* رأس المودال */
 .modal-header {
   display: flex;
@@ -930,16 +941,17 @@ textarea:focus {
   flex: 1;
 }
 
-/* أنيميشن */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000000;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #e74c3c; /* أحمر عند التحويم */
 }
 
 </style> 

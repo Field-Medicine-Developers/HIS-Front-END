@@ -1091,4 +1091,16 @@ textarea:focus {
   outline: none;
 }
 
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000000;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #e74c3c; /* أحمر عند التحويم */
+}
 </style>
