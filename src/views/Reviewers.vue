@@ -37,19 +37,12 @@
       </div>
       <div class="filter-group">
         <select v-model="filters.reviewerType" @change="onFilterChange">
+          <option disabled value="">البحث عن الحالة</option>
           <option value="">كل الأنواع</option>
           <option v-for="type in reviewerTypes" :key="type.value" :value="type.value">
             {{ type.label }}
           </option>
         </select>
-      </div>
-      <div class="filter-group">
-        <input 
-          type="date" 
-          v-model="filters.bookDate" 
-          placeholder="تاريخ الكتاب"
-          @change="onFilterChange"
-        />
       </div>
     </div>
 
@@ -1101,6 +1094,6 @@ textarea:focus {
 }
 
 .close-button:hover {
-  color: #e74c3c; /* أحمر عند التحويم */
+  color: #e74c3c; 
 }
 </style>

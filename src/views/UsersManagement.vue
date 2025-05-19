@@ -951,7 +951,7 @@ textarea:focus {
 }
 
 .close-button:hover {
-  color: #e74c3c; /* أحمر عند التحويم */
+  color: #e74c3c; 
 }
 
 </style> 
