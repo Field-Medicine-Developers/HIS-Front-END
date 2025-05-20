@@ -104,108 +104,107 @@
 
           <!-- Private Inputs Section -->
           <div class="private-inputs-section">
-            <h3>المدخلات الخاصة بالقسم</h3>
-            <div v-for="(input, index) in formData.privateSectionInputs" :key="index" class="input-group">
-              <div class="form-group">
-                <label :for="'inputName' + index">اسم المدخل *</label>
-                <input 
-                  :id="'inputName' + index"
-                  type="text" 
-                  v-model="input.inputName"
-                  placeholder="اسم المدخل"
-                  required
-                />
-              </div>
+  <h3 class="section-title">المدخلات الخاصة بالقسم</h3>
 
-              <div class="form-group">
-                <label :for="'inputType' + index">نوع المدخل *</label>
-                <select 
-                  :id="'inputType' + index"
-                  v-model="input.inputType"
-                  required
-                >
-                  <option v-for="(label, type) in inputTypes" :key="type" :value="inputTypeValues[type]">
-                    {{ label }}
-                  </option>
-                </select>
-              </div>
+  <div
+    v-for="(input, index) in formData.privateSectionInputs"
+    :key="index"
+    class="input-group"
+  >
+    <div class="form-group">
+      <label :for="'inputName' + index">اسم المدخل *</label>
+      <input
+        :id="'inputName' + index"
+        type="text"
+        v-model="input.inputName"
+        placeholder="اسم المدخل"
+        required
+      />
+    </div>
 
-              <div class="form-group">
-                <label :for="'defaultValue' + index">القيمة الافتراضية</label>
-                <input 
-                  v-if="input.inputType !== 12"
-                  :id="'defaultValue' + index"
-                  type="text" 
-                  v-model="input.defaultValue"
-                  placeholder="القيمة الافتراضية"
-                />
-                <textarea
-                  v-else
-                  :id="'defaultValue' + index"
-                  v-model="input.defaultValue"
-                  placeholder="القيمة الافتراضية"
-                  rows="3"
-                ></textarea>
-              </div>
+    <div class="form-group">
+      <label :for="'inputType' + index">نوع المدخل *</label>
+      <select
+        :id="'inputType' + index"
+        v-model="input.inputType"
+        required
+      >
+        <option v-for="(label, type) in inputTypes" :key="type" :value="inputTypeValues[type]">
+          {{ label }}
+        </option>
+      </select>
+    </div>
 
-              <div class="form-group" v-if="input.inputType === 6">
-                <label :for="'options' + index">الخيارات (مفصولة بفاصلة)</label>
-                <input 
-                  :id="'options' + index"
-                  type="text" 
-                  v-model="input.options"
-                  placeholder="الخيارات"
-                />
-              </div>
+    <div class="form-group">
+      <label :for="'defaultValue' + index">القيمة الافتراضية</label>
+      <input
+        v-if="input.inputType !== 12"
+        :id="'defaultValue' + index"
+        type="text"
+        v-model="input.defaultValue"
+        placeholder="القيمة الافتراضية"
+      />
+      <textarea
+        v-else
+        :id="'defaultValue' + index"
+        v-model="input.defaultValue"
+        placeholder="القيمة الافتراضية"
+        rows="3"
+      ></textarea>
+    </div>
 
-              <div class="form-group">
-                <label class="checkbox-label">
-                  <input 
-                    type="checkbox" 
-                    v-model="input.isRequired"
-                  />
-                  إلزامي
-                </label>
-              </div>
+    <div class="form-group" v-if="input.inputType === 6">
+      <label :for="'options' + index">الخيارات (مفصولة بفاصلة)</label>
+      <input
+        :id="'options' + index"
+        type="text"
+        v-model="input.options"
+        placeholder="الخيارات"
+      />
+    </div>
 
-              <div class="form-group" v-if="input.inputType === 2">
-                <div class="range-inputs">
-                  <div>
-                    <label :for="'minValue' + index">القيمة الدنيا</label>
-                    <input 
-                      :id="'minValue' + index"
-                      type="number" 
-                      v-model.number="input.minValue"
-                    />
-                  </div>
-                  <div>
-                    <label :for="'maxValue' + index">القيمة القصوى</label>
-                    <input 
-                      :id="'maxValue' + index"
-                      type="number" 
-                      v-model.number="input.maxValue"
-                    />
-                  </div>
-                </div>
-              </div>
+    <div class="form-group">
+      <label class="checkbox-wrapper">
+        <input type="checkbox" v-model="input.isRequired" />
+        <span class="custom-check"></span>
+        إلزامي
+      </label>
+    </div>
 
-              <button 
-                type="button" 
-                class="remove-input-btn"
-                @click="removeInput(index)"
-              >
-                حذف المدخل
-              </button>
-            </div>
-
-            <button 
-              type="button" 
-              class="add-input-btn"
-              @click="addNewInput"
-            >
-              إضافة مدخل جديد
-            </button>
-          </div>
+    <div class="form-group" v-if="input.inputType === 2">
+      <div class="range-inputs">
+        <div>
+          <label :for="'minValue' + index">القيمة الدنيا</label>
+          <input
+            :id="'minValue' + index"
+            type="number"
+            v-model.number="input.minValue"
+          />
+        </div>
+        <div>
+          <label :for="'maxValue' + index">القيمة القصوى</label>
+          <input
+            :id="'maxValue' + index"
+            type="number"
+            v-model.number="input.maxValue"
+          />
+        </div>
+      </div>
+    </div>
+  
+   <button
+        type="button"
+        class="remove-btn"
+        @click="removeInput(index)"
+      >
+        حذف المدخل
+      </button>
+    </div>
+  
+      <div class="form-actions mt-4">
+      <button type="button" class="add-input-btn" @click="addNewInput">إضافة مدخل جديد</button>
+      </div>
+  </div>
 
           <div v-if="errorMessage" class="error-message">
             {{ errorMessage }}
@@ -788,7 +787,19 @@ input:focus, select:focus {
   width: 90%;
   max-width: 800px;
   max-height: 90vh;
+  animation: fadeInUp 0.4s ease-in-out;
   overflow-y: auto;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
@@ -1177,4 +1188,178 @@ textarea:focus {
 .cancel-delete-btn:hover {
   background-color: #7f8c8d;
 }
+
+
+
+.private-inputs-section {
+  border: 1px solid #ddd;
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  background-color: #fafafa;
+}
+
+.input-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  background: #fff;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  position: relative;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+input,
+select,
+textarea,
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #32817d;
+  border-radius: 6px;
+  font-size: 15px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #32817d;
+  box-shadow: 0 0 0 4px rgba(50, 129, 125, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
+  outline: none;
+}
+
+/* Checkbox */
+.checkbox-container {
+  display: flex;
+  justify-content: flex-start;
+  gap: 25px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.checkbox-wrapper {
+  position: relative;
+  padding-left: 28px;
+  font-size: 14px;
+  color: #2c3e50;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkbox-wrapper .custom-check {
+  position: absolute;
+  left: 250px;
+  top: 2px;
+  height: 18px;
+  width: 18px;
+  background-color: #eee;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  border: 1px solid #bbb;
+}
+
+.checkbox-wrapper input:checked ~ .custom-check {
+  background-color: #2c3e50;
+  border-color: #2c3e50;
+}
+
+.checkbox-wrapper .custom-check:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 4px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-wrapper input:checked ~ .custom-check:after {
+  display: block;
+}
+
+
+
+.remove-btn {
+  justify-self: start;
+  align-self: end;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+  position: absolute;
+  bottom: 25px;
+  left: 15px;
+
+}
+
+.remove-btn:hover {
+  background-color: #c0392b;
+}
+
+.add-hour-btn,
+.add-input-btn {
+  margin-top: 10px;
+  background-color: #2c3e50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-hour-btn:hover,
+.add-input-btn:hover {
+  background-color: #2c3e50e2;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000000;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #e74c3c; 
+}
+
+
 </style> 

@@ -1,32 +1,60 @@
 <template>
-  <div class="working-hours">
-    <h1>إدارة ساعات العمل</h1>
+   <div class="working-hours">
     
-    <!-- Loading Indicator -->
-    <!-- <div v-if="loading" class="loading-overlay">
-      <div class="loading-spinner"></div>
-      <p>جاري التحميل...</p>
-    </div> -->
-    
-    <!-- Add Shift Button -->
+  <h1>إدارة ساعات العمل</h1>
+
+    <!-- Buttons to choose add type -->
     <div class="add-shift-button">
-      <button @click="showModal = true" class="add-btn"><i class="pi pi-user-plus"></i>إضافة شفت جديد</button>
+      <button @click="showStaffModal" class="add-btn me-2">
+        <i class="pi pi-user-plus"></i> إضافة موظف  
+      </button>
+      <button @click="showSectionModal" class="add-btn">
+        <i class="pi pi-plus"></i> إضافة أقسام
+      </button>
     </div>
-    
-    <!-- Filters -->
-    <div class="filters">
+
+   <!-- Filters -->
+   <div class="filters">
       <div class="filter-group">
-        <input 
-          type="text" 
-          v-model="filters.shiftName" 
+        <input
+          type="text"
+          v-model="filters.shiftName"
           placeholder="البحث باسم الشفت"
           @input="onFilterChange"
         />
       </div>
+
+      <div class="filter-group">
+        <input
+          type="time"
+          v-model="filters.startTime"
+          placeholder="وقت البداية"
+          @input="onFilterChange"
+        />
+      </div>
+
+      <div class="filter-group">
+        <input
+          type="time"
+          v-model="filters.endTime"
+          placeholder="وقت النهاية"
+          @input="onFilterChange"
+        />
+      </div>
+
+      <div class="filter-group">
+        <select v-model="filters.workingDay" @change="onFilterChange">
+          <option value="">كل الأيام</option>
+          <option v-for="(label, value) in workingDays" :key="value" :value="value">
+            {{ label }}
+          </option>
+        </select>
+      </div>
     </div>
 
-    <!-- Shifts Table -->
-    <div class="table-container">
+
+       <!-- Shifts Table -->
+       <div class="table-container">
       <table class="shifts-table">
         <thead>
           <tr>
@@ -35,12 +63,14 @@
             <th>وقت النهاية</th>
             <th>يوم العمل</th>
             <th>اسم الموظف الطبي</th>
+            <th>اسم القسم</th>
             <th>الإجراءات</th>
           </tr>
         </thead>
         <tbody>
           <template v-if="loading">
             <tr v-for="n in 5" :key="n" class="skeleton-row">
+              <td><div class="skeleton-cell"></div></td>
               <td><div class="skeleton-cell"></div></td>
               <td><div class="skeleton-cell"></div></td>
               <td><div class="skeleton-cell"></div></td>
@@ -56,6 +86,7 @@
               <td>{{ shift.endTime }}</td>
               <td>{{ getDayName(shift.workingDay) }}</td>
               <td>{{ shift.medicalStaff?.user?.firstName || '-' }}</td>
+              <td>{{ shift.staffSections?.sectionName || '-' }}</td>
               <td>
                 <button @click="editShift(shift)" class="edit-btn">
                   <i class="fas fa-edit"></i> تعديل
@@ -82,77 +113,73 @@
       </button>
     </div>
 
-    <!-- Add/Edit Shift Modal -->
+    <!-- Modal -->
     <div v-if="showModal" class="modal-overlay" @click="closeModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h2>{{ editingShift ? 'تعديل الشفت' : 'إضافة شفت جديد' }}</h2>
           <button class="close-button" @click="closeModal">&times;</button>
         </div>
-        
+
         <form @submit.prevent="handleSubmit" class="shift-form">
           <div class="form-group">
             <label for="shiftName">اسم الشفت *</label>
-            <input 
-              type="text" 
-              id="shiftName" 
-              v-model="formData.shiftName" 
+            <input
+              type="text"
+              id="shiftName"
+              v-model="formData.shiftName"
               placeholder="اسم الشفت"
               required
             />
           </div>
-          
+
           <div class="form-group">
             <label for="startTime">وقت البداية *</label>
-            <input 
-              type="time" 
-              id="startTime" 
-              v-model="formData.startTime" 
+            <input
+              type="time"
+              id="startTime"
+              v-model="formData.startTime"
               required
             />
           </div>
-          
+
           <div class="form-group">
             <label for="endTime">وقت النهاية *</label>
-            <input 
-              type="time" 
-              id="endTime" 
-              v-model="formData.endTime" 
+            <input
+              type="time"
+              id="endTime"
+              v-model="formData.endTime"
               required
             />
           </div>
-          
+
           <div class="form-group">
             <label for="workingDay">يوم العمل *</label>
-            <select 
-              id="workingDay" 
-              v-model="formData.workingDay"
-              required
-            >
-              <option v-for="(label, value) in workingDays" 
-                :key="value" 
-                :value="value"
-              >
+            <select id="workingDay" v-model="formData.workingDay" required>
+              <option v-for="(label, value) in workingDays" :key="value" :value="value">
                 {{ label }}
               </option>
             </select>
           </div>
 
-          <div class="form-group">
-            <label for="medicalStaffId">موظف الكادر طبي *</label>
-            <select 
-              id="medicalStaffId" 
-              v-model="formData.medicalStaffId"
-              required
-            >
-              <option v-for="staff in medicalStaffList" 
-                :key="staff.id" 
-                :value="staff.id"
-              >
-                {{ staff.user.firstName }}
-              </option>
-            </select>
-          </div>
+           <div v-if="!editingShift && showStaffField" class="form-group">
+             <label for="medicalStaffId">موظف الكادر طبي *</label>
+             <select id="medicalStaffId" v-model="formData.medicalStaffId" required>
+               <option v-for="staff in medicalStaffList" :key="staff.id" :value="staff.id">
+                 {{ staff.user.firstName }}
+               </option>
+             </select>
+           </div>
+           
+           <div v-if="!editingShift && showSectionField" class="form-group">
+             <label for="staffSectionsId">الأقسام *</label>
+             <select id="staffSectionsId" v-model="formData.staffSectionsId" required>
+               <option value="">اختر القسم</option>
+               <option v-for="section in sections" :key="section.id" :value="section.id">
+                 {{ section.sectionName }}
+               </option>
+             </select>
+           </div>
 
           <div v-if="errorMessage" class="error-message">
             {{ errorMessage }}
@@ -163,13 +190,15 @@
           </div>
 
           <div class="form-actions">
-            <button type="submit" class="submit-button">{{ editingShift ? 'تحديث' : 'حفظ' }}</button>
+            <button type="submit" class="submit-button">
+              {{ editingShift ? 'تحديث' : 'حفظ' }}
+            </button>
             <button type="button" class="cancel-button" @click="closeModal">إلغاء</button>
           </div>
         </form>
       </div>
     </div>
-
+  </div>
     <!-- Delete Confirmation Modal -->
     <div v-if="showDeleteModal" class="modal-overlay" @click="closeDeleteModal">
       <div class="modal-content delete-modal" @click.stop>
@@ -192,7 +221,7 @@
         </div>
       </div>
     </div>
-  </div>
+
 </template>
 
 <script>
@@ -206,14 +235,17 @@ export default {
         endTime: '',
         workingDay: 1,
         medicalStaffId: '',
+        staffSectionsId: '',
         workingHoursResponse: {
           startTime: '',
           endTime: '',
           workingDay: 1,
-          medicalStaffId: ''
+          medicalStaffId: '',
+          staffSectionsId: ''
         }
       },
       medicalStaffList: [],
+      sections: [],
       errorMessage: '',
       successMessage: '',
       shifts: [],
@@ -246,6 +278,7 @@ export default {
   created() {
     this.fetchShifts()
     this.fetchMedicalStaff()
+    this.fetchSections();
   },
   methods: {
     async fetchShifts() {
@@ -254,7 +287,10 @@ export default {
         const params = {
           PageNumber: this.pagination.page,
           PageSize: this.pagination.pageSize,
-          ShiftName: this.filters.shiftName || undefined
+          ShiftName: this.filters.shiftName || undefined,
+          StartTime: this.filters.startTime || undefined,
+          EndTime: this.filters.endTime || undefined,
+          DaysOfWeek: this.filters.workingDay || undefined
         }
 
         const response = await this.$axios.get('/WorkingHours/GetAllWorkingHours', { params })
@@ -288,6 +324,19 @@ export default {
         this.errorMessage = 'حدث خطأ أثناء جلب بيانات الموظفين الطبيين'
       }
     },
+    async fetchSections() {
+  try {
+    const response = await this.$axios.get('/StaffSections/GetAllStaffSections', {
+      params: {
+        PageSize: 100
+      }
+    });
+    this.sections = response.data.items || [];
+  } catch (error) {
+    console.error('Error fetching sections:', error);
+    this.errorMessage = 'حدث خطأ أثناء جلب الأقسام';
+  }
+},
     async handleSubmit() {
       try {
         this.errorMessage = ''
@@ -304,8 +353,18 @@ export default {
           startTime: formatTimeTo24H(this.formData.startTime),
           endTime: formatTimeTo24H(this.formData.endTime),
           workingDay: this.formData.workingDay,
-          medicalStaffId: this.formData.medicalStaffId
+          // medicalStaffId: this.formData.medicalStaffId,
+          // staffSectionsId: this.formData.staffSectionsId
         }
+
+        // أضف فقط إذا كان الحقل ظاهر ومستخدم
+if (this.showStaffField) {
+  formattedData.medicalStaffId = this.formData.medicalStaffId;
+}
+
+if (this.showSectionField) {
+  formattedData.staffSectionsId = this.formData.staffSectionsId;
+}
 
         if (this.editingShift) {
           await this.$axios.put(`/WorkingHours/UpdateWorkingHours/${this.editingShift.id}`, formattedData)
@@ -339,6 +398,17 @@ export default {
       this.shiftToDelete = shift
       this.showDeleteModal = true
     },
+    showStaffModal() {
+      this.showModal = true;
+      this.showStaffField = true;
+      this.showSectionField = false;
+   },  
+
+    showSectionModal() {
+      this.showModal = true;
+      this.showSectionField = true;
+      this.showStaffField = false;
+   },
     async confirmDelete() {
       if (!this.shiftToDelete) return
       
@@ -368,11 +438,13 @@ export default {
         endTime: '',
         workingDay: 1,
         medicalStaffId: '',
+        staffSectionsId: '',
         workingHoursResponse: {
           startTime: '',
           endTime: '',
           workingDay: 1,
-          medicalStaffId: ''
+          medicalStaffId: '',
+          staffSectionsId: ''
         }
       }
       this.showModal = false
@@ -768,4 +840,165 @@ input:focus, select:focus {
     width: 100%;
   }
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 75%;
+  max-width: 650px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow:
+    0 15px 30px rgba(0, 0, 0, 0.15),
+    0 4px 12px rgba(0, 0, 0, 0.05);
+  animation: fadeInUp 0.3s ease-in-out;
+  border: 1px solid #ccc;
+  position: relative;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  font-size: 22px;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 26px;
+  color: #888;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-button:hover {
+  color: #e74c3c;
+}
+
+
+
+.input-group {
+  padding: 20px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background-color: #fafafa;
+  margin-bottom: 20px;
+}
+
+.input-group:nth-child(even) {
+  background-color: #f0f4f8;
+}
+
+.form-group {
+  margin-bottom: 5px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+input,
+select,
+textarea,
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #32817d;
+  border-radius: 6px;
+  font-size: 15px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #32817d;
+  box-shadow: 0 0 0 4px rgba(50, 129, 125, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
+  outline: none;
+}
+
+
+
+.range-inputs {
+  display: flex;
+  gap: 15px;
+  justify-content: space-between;
+}
+
+.range-inputs > div {
+  flex: 1;
+}
+
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000000;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #e74c3c; 
+}
+
+.me-2 {
+  margin-left: 10px;
+}
+
+.page-header {
+  background-color: #d8dadc; 
+  padding: 20px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); 
+  margin-bottom: 20px;
+  border-radius: 6px;
+  text-align: left; 
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 24px;
+}
+
 </style> 

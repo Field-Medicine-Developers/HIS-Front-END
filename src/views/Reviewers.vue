@@ -37,19 +37,12 @@
       </div>
       <div class="filter-group">
         <select v-model="filters.reviewerType" @change="onFilterChange">
+          <option disabled value="">البحث عن الحالة</option>
           <option value="">كل الأنواع</option>
           <option v-for="type in reviewerTypes" :key="type.value" :value="type.value">
             {{ type.label }}
           </option>
         </select>
-      </div>
-      <div class="filter-group">
-        <input 
-          type="date" 
-          v-model="filters.bookDate" 
-          placeholder="تاريخ الكتاب"
-          @change="onFilterChange"
-        />
       </div>
     </div>
 
@@ -279,25 +272,19 @@
             />
           </div>
 
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input 
-                type="checkbox" 
-                v-model="formData.exceptionalCase" 
-              />
-              حالة استثنائية
-            </label>
-          </div>
-
-          <div class="form-group">
-            <label class="checkbox-label">
-              <input 
-                type="checkbox" 
-                v-model="formData.isPaid" 
-              />
-              مدفوع
-            </label>
-          </div>
+          <div class="checkbox-container">
+             <label class="checkbox-wrapper">
+               <input type="checkbox" v-model="formData.exceptionalCase" />
+               <span class="custom-check"></span>
+               حالة استثنائية
+             </label>
+           
+             <label class="checkbox-wrapper">
+               <input type="checkbox" v-model="formData.isPaid" />
+               <span class="custom-check"></span>
+               مدفوع
+             </label>
+           </div>
 
           <div v-if="errorMessage" class="error-message">
             {{ errorMessage }}
@@ -715,6 +702,7 @@ h1, h2, h3 {
 .form-row {
   display: flex;
   gap: 20px;
+  flex-wrap: wrap;
 }
 
 .form-group {
@@ -731,22 +719,19 @@ label {
 
 input, select {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  transition: border-color 0.3s;
+  padding: 12px 14px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  background-color: #fdfdfd;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 input:focus, select:focus {
+  border-color: #32817d;
+  box-shadow: 0 0 0 4px rgba(50, 129, 125, 0.15);
   outline: none;
-  border-color: #2c3e50;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 /* Buttons */
@@ -826,23 +811,28 @@ input:focus, select:focus {
 }
 
 /* Messages */
+.error-message,
+.success-message {
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
 .error-message {
+  background-color: #fdecea;
   color: #e74c3c;
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: #fde8e8;
-  border-radius: 4px;
+  border: 1px solid #f5c6cb;
 }
 
 .success-message {
-  color: #27ae60;
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: #e8f5e9;
-  border-radius: 4px;
+  background-color: #e6f4ea;
+  color: #2ecc71;
+  border: 1px solid #b2dfdb;
 }
 
-/* Modal Styles */
+/* Modal */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -857,21 +847,47 @@ input:focus, select:focus {
 }
 
 .modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 800px;
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.03),
+    0 30px 80px rgba(0, 0, 0, 0.2);
+  width: 95%;
+  max-width: 850px;
   max-height: 90vh;
   overflow-y: auto;
+  animation: fadeInUp 0.4s ease-in-out;
+  position: relative;
+  border: 1px solid #e0e0e0;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f0f0f0;
   margin-bottom: 20px;
+}
+
+.modal-header h2 {
+  font-size: 24px;
+  color: #2c3e50;
+  margin: 0;
+  font-weight: 600;
 }
 
 .close-button {
@@ -882,6 +898,7 @@ input:focus, select:focus {
   color: #666;
 }
 
+/* Add button */
 .add-reviewer-button {
   margin-bottom: 20px;
   text-align: left;
@@ -904,69 +921,65 @@ input:focus, select:focus {
   background-color: #34495e;
 }
 
-/* Delete Modal Styles */
-.delete-modal {
-  max-width: 400px;
-  text-align: center;
-}
-
-.delete-modal-content {
-  padding: 20px 0;
-}
-
-.delete-icon {
-  font-size: 48px;
-  color: #e74c3c;
-  margin-bottom: 20px;
-}
-
-.delete-message {
-  font-size: 18px;
-  color: #2c3e50;
+/* Checkbox */
+.checkbox-container {
+  display: flex;
+  justify-content: flex-start;
+  gap: 25px;
+  margin-top: 10px;
   margin-bottom: 10px;
 }
 
-.delete-warning {
-  color: #e74c3c;
-  margin-bottom: 20px;
-}
-
-.delete-actions {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.confirm-delete-btn,
-.cancel-delete-btn {
-  padding: 10px 25px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
+.checkbox-wrapper {
+  position: relative;
+  padding-left: 28px;
+  font-size: 14px;
+  color: #2c3e50;
   cursor: pointer;
-  transition: all 0.3s;
+  user-select: none;
 }
 
-.confirm-delete-btn {
-  background-color: #e74c3c;
-  color: white;
+.checkbox-wrapper input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
 }
 
-.confirm-delete-btn:hover {
-  background-color: #c0392b;
+.checkbox-wrapper .custom-check {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  height: 18px;
+  width: 18px;
+  background-color: #eee;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  border: 1px solid #bbb;
 }
 
-.cancel-delete-btn {
-  background-color: #95a5a6;
-  color: white;
+.checkbox-wrapper input:checked ~ .custom-check {
+  background-color: #2c3e50;
+  border-color: #2c3e50;
 }
 
-.cancel-delete-btn:hover {
-  background-color: #7f8c8d;
+.checkbox-wrapper .custom-check:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 4px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
-/* Skeleton Loading Styles */
+.checkbox-wrapper input:checked ~ .custom-check:after {
+  display: block;
+}
+
+/* Skeleton */
 .skeleton-row {
   animation: skeleton-loading 1s linear infinite alternate;
 }
@@ -1011,17 +1024,12 @@ input:focus, select:focus {
   background-color: #f8f9fa;
 }
 
-.modal-body {
-  max-height: 70vh;
-  overflow-y: auto;
-}
-
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
   .reviewers {
     padding: 10px;
   }
-  
+
   .filters {
     flex-direction: column;
   }
@@ -1041,7 +1049,7 @@ input:focus, select:focus {
 
   .modal-content {
     width: 95%;
-  padding: 20px;
+    padding: 20px;
   }
 
   .edit-btn,
@@ -1051,61 +1059,41 @@ input:focus, select:focus {
   }
 }
 
-/* Remove status-related styles */
-.status-container,
-.status-badge,
-.status-badge.paid,
-.status-badge.unpaid,
-.status-badge.exceptional {
-  display: none;
+input,
+select,
+textarea,
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #32817d;
+  border-radius: 6px;
+  font-size: 15px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  box-sizing: border-box;
 }
 
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  white-space: nowrap;
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #32817d;
+  box-shadow: 0 0 0 4px rgba(50, 129, 125, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
+  outline: none;
 }
 
-.status-badge.status-blue {
-  background-color: #e3f2fd;
-  color: #1565c0;
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000000;
+  transition: color 0.3s ease;
 }
 
-.status-badge.status-green {
-  background-color: #e8f5e9;
-  color: #2e7d32;
+.close-button:hover {
+  color: #e74c3c; 
 }
-
-.status-badge.status-orange {
-  background-color: #fff3e0;
-  color: #e65100;
-}
-
-.status-badge.status-pink {
-  background-color: #fce4ec;
-  color: #c2185b;
-}
-
-.status-badge.status-purple {
-  background-color: #f3e5f5;
-  color: #6a1b9a;
-}
-
-.status-badge.status-light-blue {
-  background-color: #e0f7fa;
-  color: #00838f;
-}
-
-.status-badge.status-light-green {
-  background-color: #f1f8e9;
-  color: #558b2f;
-}
-
-.status-badge.status-gray {
-  background-color: #f5f5f5;
-  color: #616161;
-}
-</style> 
+</style>

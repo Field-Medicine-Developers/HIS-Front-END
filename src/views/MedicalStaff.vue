@@ -368,8 +368,9 @@
               </div>
 
               <div class="form-group">
-                <label class="checkbox-label">
+                <label class="checkbox-wrapper">
                   <input type="checkbox" v-model="input.isRequired" />
+                  <span class="custom-check"></span>
                   إلزامي
                 </label>
               </div>
@@ -992,17 +993,6 @@ h3 {
   position: relative;
 }
 
-.remove-btn {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 5px 10px;
-  cursor: pointer;
-}
 
 .add-hour-btn,
 .add-input-btn {
@@ -1131,16 +1121,21 @@ select:focus {
 }
 
 .modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 90%;
-  max-width: 800px;
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.1),      /* ظل أساسي */
+    0 5px 15px rgba(50, 129, 125, 0.05); /* ظل بلون العلامة */
+  width: 95%;
+  max-width: 850px;
   max-height: 90vh;
   overflow-y: auto;
+  animation: fadeInUp 0.4s ease-in-out;
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.05); /* إطار ناعم */
+  backdrop-filter: blur(4px); /* تأثير زجاجي خفيف (اختياري) */
 }
-
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -1262,14 +1257,18 @@ select:focus {
   margin-bottom: 20px;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
   }
-  100% {
-    transform: rotate(360deg);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
+
+
 
 .loading-overlay p {
   color: #2c3e50;
@@ -1369,4 +1368,215 @@ select:focus {
     background-position: -200% 0;
   }
 }
+
+.modal-content .staff-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.modal-content .form-group {
+  margin-bottom: 15px;
+}
+
+.modal-content input,
+.modal-content select {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 15px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: 0.3s;
+}
+
+.modal-content input:focus,
+.modal-content select:focus {
+  border-color: #32817d;
+  box-shadow: 0 0 0 3px rgba(50, 129, 125, 0.1);
+  outline: none;
+}
+
+.working-hour-item {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  background-color: #f9f9f9;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+.input-item {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  margin-bottom: 20px;
+  position: relative;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+}
+
+
+.add-hour-btn,
+.add-input-btn {
+  margin-top: 10px;
+  background-color: #2c3e50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-hour-btn:hover,
+.add-input-btn:hover {
+  background-color: #2c3e50e2;
+}
+
+
+.checkbox-container {
+  display: flex;
+  justify-content: flex-start;
+  gap: 25px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.checkbox-wrapper {
+  position: relative;
+  padding-left: 28px;
+  font-size: 14px;
+  color: #2c3e50;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkbox-wrapper .custom-check {
+  position: absolute;
+  left: 150px;
+  top: 2px;
+  height: 18px;
+  width: 18px;
+  background-color: #eee;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  border: 1px solid #bbb;
+}
+
+.checkbox-wrapper input:checked ~ .custom-check {
+  background-color: #2c3e50;
+  border-color: #2c3e50;
+}
+
+.checkbox-wrapper .custom-check:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 4px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-wrapper input:checked ~ .custom-check:after {
+  display: block;
+}
+
+
+/* الكارد العام للمدخل أو الشفت */
+.working-hour-item,
+.input-item {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #fdfdfd;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+/* زر الحذف داخل الكارد */
+.remove-btn {
+  justify-self: start;
+  align-self: end;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+  position: absolute;
+  bottom: 25px;
+  left: 15px;
+
+}
+
+.remove-btn:hover {
+  background-color: #c0392b;
+}
+
+
+
+input,
+select,
+textarea,
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #32817d;
+  border-radius: 6px;
+  font-size: 15px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #32817d;
+  box-shadow: 0 0 0 4px rgba(50, 129, 125, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
+  outline: none;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #000000;
+  transition: color 0.3s ease;
+}
+
+.close-button:hover {
+  color: #e74c3c; 
+}
+
 </style>
