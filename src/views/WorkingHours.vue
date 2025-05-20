@@ -1,7 +1,9 @@
 <template>
    <div class="working-hours">
     
+    <div class="page-header">
   <h1>إدارة ساعات العمل</h1>
+    </div>
 
     <!-- Buttons to choose add type -->
     <div class="add-shift-button">
@@ -986,19 +988,26 @@ textarea:focus {
   margin-left: 10px;
 }
 
+
+/* Page header styles */
 .page-header {
-  background-color: #d8dadc; 
-  padding: 20px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08); 
-  margin-bottom: 20px;
-  border-radius: 6px;
-  text-align: left; 
+  background: linear-gradient(to right, #f5faff, #ffffff);  padding: 25px 30px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  text-align: left;
+  border-left: 6px solid #2c3e50;
+  display: flex;
+  align-items: center;
 }
 
 .page-header h1 {
   margin: 0;
   color: #2c3e50;
-  font-size: 24px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
+
 
 </style> 

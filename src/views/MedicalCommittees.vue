@@ -2,7 +2,7 @@
   <div class="medical-committees">
     <div class="page-header">
       <h1>إدارة اللجان الطبية</h1>
-      
+    </div>
       <!-- Add Committee Button -->
       <div class="add-committee-button">
         <button @click="showModal = true" class="add-btn ml-1">
@@ -12,7 +12,6 @@
           <i class="pi pi-plus"></i> إضافة نوع لجنة جديد
         </button>
       </div>
-    </div>
     
     <!-- Filters -->
     <div class="filters">
@@ -934,5 +933,25 @@ select:focus {
   100% {
     background-position: -200% 0;
   }
+}
+
+/* Page header styles */
+.page-header {
+  background: linear-gradient(to right, #f5faff, #ffffff);  padding: 25px 30px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  text-align: left;
+  border-left: 6px solid #2c3e50;
+  display: flex;
+  align-items: center;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 </style> 
