@@ -48,6 +48,15 @@
             <button @click="viewDetails(diagnosis)" class="view-btn">
               <i class="pi pi-eye"></i> عرض التفاصيل
             </button>
+            <button @click="showReplyModal(diagnosis)" class="reply-btn">
+              <i class="pi pi-reply"></i> رد اللجنة
+            </button>
+            <button @click="openDiagnosisModal(diagnosis)" class="diagnosis-btn">
+              <i class="pi pi-file-edit"></i> تشخيص الطبيب
+            </button>
+            <button @click="openTransferModal(diagnosis)" class="transfer-btn">
+              <i class="pi pi-send"></i> تحويل
+            </button>
           </div>
         </div>
       </div>
@@ -236,6 +245,211 @@
         </form>
       </div>
     </div>
+
+    <!-- Reply Modal -->
+    <div v-if="showReplyModal" class="modal-overlay" @click="closeReplyModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2>رد اللجنة</h2>
+          <button class="close-button" @click="closeReplyModal">&times;</button>
+        </div>
+        
+        <form @submit.prevent="handleReplySubmit" class="examination-form">
+          <div class="form-group">
+            <label for="reply">الرد *</label>
+            <textarea 
+              id="reply" 
+              v-model="replyFormData.reply" 
+              required
+              rows="4"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="replyImage">صورة الرد</label>
+            <input 
+              type="file" 
+              id="replyImage" 
+              @change="handleReplyImageChange"
+              accept="image/*"
+            />
+          </div>
+
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+
+          <div v-if="successMessage" class="success-message">
+            {{ successMessage }}
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="submit-button" :disabled="loading">
+              <i class="pi" :class="loading ? 'pi-spin pi-spinner' : 'pi-save'"></i>
+              حفظ
+            </button>
+            <button type="button" class="cancel-button" @click="closeReplyModal">
+              <i class="pi pi-times"></i>
+              إلغاء
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Diagnosis Modal -->
+    <div v-if="showDiagnosisModal" class="modal-overlay" @click="closeDiagnosisModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2>تشخيص الطبيب</h2>
+          <button class="close-button" @click="closeDiagnosisModal">&times;</button>
+        </div>
+        
+        <form @submit.prevent="handleDiagnosisSubmit" class="examination-form">
+          <div class="form-group">
+            <label for="medicalInputs">المدخلات الطبية</label>
+            <div v-for="(input, index) in diagnosisForm.medicalInputs" :key="index" class="input-group">
+              <input 
+                type="text" 
+                v-model="input.value" 
+                :placeholder="'المدخل الطبي ' + (index + 1)"
+              />
+              <button type="button" @click="removeMedicalInput(index)" class="remove-btn">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+            <button type="button" @click="addMedicalInput" class="add-input-btn">
+              <i class="pi pi-plus"></i> إضافة مدخل طبي
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label for="sectionInputs">مدخلات القسم</label>
+            <div v-for="(input, index) in diagnosisForm.sectionInputs" :key="index" class="input-group">
+              <input 
+                type="text" 
+                v-model="input.value" 
+                :placeholder="'مدخل القسم ' + (index + 1)"
+              />
+              <button type="button" @click="removeSectionInput(index)" class="remove-btn">
+                <i class="pi pi-times"></i>
+              </button>
+            </div>
+            <button type="button" @click="addSectionInput" class="add-input-btn">
+              <i class="pi pi-plus"></i> إضافة مدخل قسم
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label for="diagnosisFile">ملف التشخيص</label>
+            <input 
+              type="file" 
+              id="diagnosisFile" 
+              @change="handleDiagnosisFileChange"
+              accept="image/*,.pdf,.doc,.docx"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="fileDescription">وصف الملف</label>
+            <textarea 
+              id="fileDescription" 
+              v-model="diagnosisForm.fileDescription"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+
+          <div v-if="successMessage" class="success-message">
+            {{ successMessage }}
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="submit-button" :disabled="loading">
+              <i class="pi" :class="loading ? 'pi-spin pi-spinner' : 'pi-save'"></i>
+              حفظ
+            </button>
+            <button type="button" class="cancel-button" @click="closeDiagnosisModal">
+              <i class="pi pi-times"></i>
+              إلغاء
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div v-if="showTransferModal" class="modal-overlay" @click="closeTransferModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2>تحويل التشخيص</h2>
+          <button class="close-button" @click="closeTransferModal">&times;</button>
+        </div>
+        
+        <form @submit.prevent="handleTransferSubmit" class="examination-form">
+          <div class="form-group">
+            <label for="toMedicalStaffId">الطبيب المحول إليه *</label>
+            <select 
+              id="toMedicalStaffId" 
+              v-model="transferForm.toMedicalStaffId" 
+              required
+              @change="onTransferDoctorChange"
+            >
+              <option value="">اختر الطبيب</option>
+              <option 
+                v-for="staff in medicalStaff" 
+                :key="staff.id" 
+                :value="staff.id"
+              >
+                {{ staff.user.firstName }} {{ staff.user.secondName }} {{ staff.user.thirdName }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="toStaffSectionsId">القسم المحول إليه *</label>
+            <input 
+              type="text" 
+              id="toStaffSectionsId" 
+              v-model="transferForm.toStaffSectionsId"
+              readonly
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="transferDescription">وصف التحويل</label>
+            <textarea 
+              id="transferDescription" 
+              v-model="transferForm.description"
+              rows="4"
+              placeholder="أدخل سبب التحويل..."
+            ></textarea>
+          </div>
+
+          <div v-if="errorMessage" class="error-message">
+            {{ errorMessage }}
+          </div>
+
+          <div v-if="successMessage" class="success-message">
+            {{ successMessage }}
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="submit-button" :disabled="loading">
+              <i class="pi" :class="loading ? 'pi-spin pi-spinner' : 'pi-save'"></i>
+              تحويل
+            </button>
+            <button type="button" class="cancel-button" @click="closeTransferModal">
+              <i class="pi pi-times"></i>
+              إلغاء
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
   <!-- Details Modal -->
 <div v-if="showDetailsModal" class="modal-overlay" @click="closeDetailsModal">
@@ -360,7 +574,10 @@ export default {
     return {
       showModal: false,
       showDetailsModal: false,
-      selectedDiagnosis: null, 
+      showReplyModal: false,
+      showDiagnosisModal: false,
+      showTransferModal: false,
+      selectedDiagnosis: null,
       formData: {
         reviewerId: '',
         bloodPressure: '',
@@ -379,6 +596,12 @@ export default {
         staffSectionId: '',
         notes: ''
       },
+      replyFormData: {
+        committeeMembersId: '',
+        initialExaminationId: '',
+        reply: '',
+        replyImage: null
+      },
       filters: {
         reviewerId: '',
         medicalStaffId: ''
@@ -388,7 +611,20 @@ export default {
       diagnoses: [],
       loading: false,
       errorMessage: '',
-      successMessage: ''
+      successMessage: '',
+      diagnosisForm: {
+        initialDiagnosisId: '',
+        medicalInputs: [],
+        sectionInputs: [],
+        file: null,
+        fileDescription: ''
+      },
+      transferForm: {
+        initialDiagnosisId: '',
+        toMedicalStaffId: '',
+        toStaffSectionsId: '',
+        description: ''
+      },
     }
   },
 
@@ -402,6 +638,64 @@ export default {
       this.showDetailsModal = false;
       this.selectedDiagnosis = null;
     },
+
+    showReplyModal(diagnosis) {
+      this.selectedDiagnosis = diagnosis;
+      this.replyFormData = {
+        committeeMembersId: '',
+        initialExaminationId: diagnosis.id,
+        reply: '',
+        replyImage: null
+      };
+      this.showReplyModal = true;
+    },
+
+    closeReplyModal() {
+      this.showReplyModal = false;
+      this.selectedDiagnosis = null;
+      this.replyFormData = {
+        committeeMembersId: '',
+        initialExaminationId: '',
+        reply: '',
+        replyImage: null
+      };
+      this.errorMessage = '';
+      this.successMessage = '';
+    },
+
+    handleReplyImageChange(event) {
+      this.replyFormData.replyImage = event.target.files[0];
+    },
+
+    async handleReplySubmit() {
+      try {
+        this.errorMessage = '';
+        this.successMessage = '';
+        this.loading = true;
+
+        const formData = new FormData();
+        formData.append('CommitteeMembersId', this.replyFormData.committeeMembersId);
+        formData.append('InitialExaminationId', this.replyFormData.initialExaminationId);
+        formData.append('Reply', this.replyFormData.reply);
+        if (this.replyFormData.replyImage) {
+          formData.append('ReplyImage', this.replyFormData.replyImage);
+        }
+
+        await this.$axios.post('/CommitteeReply/AddCommitteeReply', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
+        this.successMessage = 'تم إضافة رد اللجنة بنجاح';
+        this.closeReplyModal();
+      } catch (error) {
+        this.errorMessage = error.response?.data?.message || 'حدث خطأ أثناء حفظ رد اللجنة';
+      } finally {
+        this.loading = false;
+      }
+    },
+
     async fetchReviewers() {
       try {
         this.loading = true;
@@ -506,11 +800,140 @@ export default {
       return reviewer ? `${reviewer.firstName} ${reviewer.secondName} ${reviewer.thirdName} ${reviewer.surName}` : 'غير معروف';
     },
 
-
     formatDate(dateString) {
       if (!dateString) return '';
       const date = new Date(dateString);
       return date.toLocaleDateString();
+    },
+
+    openDiagnosisModal(diagnosis) {
+      this.selectedDiagnosis = diagnosis;
+      this.diagnosisForm = {
+        initialDiagnosisId: diagnosis.id,
+        medicalInputs: [],
+        sectionInputs: [],
+        file: null,
+        fileDescription: ''
+      };
+      this.showDiagnosisModal = true;
+    },
+
+    closeDiagnosisModal() {
+      this.showDiagnosisModal = false;
+      this.selectedDiagnosis = null;
+      this.diagnosisForm = {
+        initialDiagnosisId: '',
+        medicalInputs: [],
+        sectionInputs: [],
+        file: null,
+        fileDescription: ''
+      };
+      this.errorMessage = '';
+      this.successMessage = '';
+    },
+
+    addMedicalInput() {
+      this.diagnosisForm.medicalInputs.push({
+        privateMedicalStaffInputId: '',
+        value: ''
+      });
+    },
+
+    removeMedicalInput(index) {
+      this.diagnosisForm.medicalInputs.splice(index, 1);
+    },
+
+    addSectionInput() {
+      this.diagnosisForm.sectionInputs.push({
+        privateSectionInputId: '',
+        value: ''
+      });
+    },
+
+    removeSectionInput(index) {
+      this.diagnosisForm.sectionInputs.splice(index, 1);
+    },
+
+    handleDiagnosisFileChange(event) {
+      this.diagnosisForm.file = event.target.files[0];
+    },
+
+    async handleDiagnosisSubmit() {
+      try {
+        this.errorMessage = '';
+        this.successMessage = '';
+        this.loading = true;
+
+        const formData = new FormData();
+        formData.append('InitialDiagnosisId', this.diagnosisForm.initialDiagnosisId);
+        formData.append('MedicalInputs', JSON.stringify(this.diagnosisForm.medicalInputs));
+        formData.append('SectionInputs', JSON.stringify(this.diagnosisForm.sectionInputs));
+        if (this.diagnosisForm.file) {
+          formData.append('File', this.diagnosisForm.file);
+        }
+        formData.append('FileDes', this.diagnosisForm.fileDescription);
+
+        await this.$axios.post('/MedicalStaff/SubmitDiagnosisInputs', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+
+        this.successMessage = 'تم حفظ التشخيص بنجاح';
+        this.closeDiagnosisModal();
+      } catch (error) {
+        this.errorMessage = error.response?.data?.message || 'حدث خطأ أثناء حفظ التشخيص';
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    openTransferModal(diagnosis) {
+      this.selectedDiagnosis = diagnosis;
+      this.transferForm = {
+        initialDiagnosisId: diagnosis.id,
+        toMedicalStaffId: '',
+        toStaffSectionsId: '',
+        description: ''
+      };
+      this.showTransferModal = true;
+    },
+
+    closeTransferModal() {
+      this.showTransferModal = false;
+      this.selectedDiagnosis = null;
+      this.transferForm = {
+        initialDiagnosisId: '',
+        toMedicalStaffId: '',
+        toStaffSectionsId: '',
+        description: ''
+      };
+      this.errorMessage = '';
+      this.successMessage = '';
+    },
+
+    onTransferDoctorChange() {
+      const selectedDoctor = this.medicalStaff.find(staff => staff.id === this.transferForm.toMedicalStaffId);
+      if (selectedDoctor) {
+        this.transferForm.toStaffSectionsId = selectedDoctor.staffSectionsId;
+      }
+    },
+
+    async handleTransferSubmit() {
+      try {
+        this.errorMessage = '';
+        this.successMessage = '';
+        this.loading = true;
+
+        await this.$axios.post('/DiagnosisRouting/TransferDiagnosis', this.transferForm);
+
+        this.successMessage = 'تم تحويل التشخيص بنجاح';
+        this.closeTransferModal();
+      } catch (error) {
+        this.errorMessage = error.response?.data?.message || 'حدث خطأ أثناء تحويل التشخيص';
+      } finally {
+        this.loading = false;
+      }
     },
   },
 
@@ -535,175 +958,61 @@ h1 {
   margin-bottom: 30px;
 }
 
-/* Filters */
-.filters {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+/* Add Examination Button */
+.add-examination-button {
+  margin-bottom: 1.5rem;
+  text-align: left;
 }
 
-.filter-group {
-  flex: 1;
-  min-width: 200px;
-}
-
-.filter-group input {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-/* Form */
-.examination-form {
-  display: grid;
-  gap: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.form-row {
-  display: flex;
-  gap: 20px;
-}
-
-.form-group {
-  flex: 1;
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
-  margin-bottom: 8px;
-  color: #2c3e50;
-  font-weight: 500;
-}
-
-input, textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  transition: border-color 0.3s;
-}
-
-input:focus, textarea:focus, select:focus {
-  outline: none;
-  border-color: #2c3e50;
-}
-
-select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  background-color: white;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 15px;
-}
-
-select:disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-
-input[readonly] {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-/* Buttons */
-.form-actions {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.submit-button,
-.cancel-button {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.submit-button {
+.add-btn {
+  padding: 0.8rem 1.5rem;
   background-color: #2c3e50;
   color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.submit-button:hover {
+.add-btn:hover {
   background-color: #34495e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
-.cancel-button {
-  background-color: #e74c3c;
-  color: white;
-}
-
-.cancel-button:hover {
-  background-color: #c0392b;
-}
-
-/* Messages */
-.error-message {
-  color: #e74c3c;
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: #fde8e8;
-  border-radius: 4px;
-}
-
-.success-message {
-  color: #27ae60;
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: #e8f5e9;
-  border-radius: 4px;
-}
-
-/* Examination Cards Styles */
-.examination-cards {
-  margin-bottom: 30px;
-}
-
+/* Cards Grid */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
 }
 
 .card {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
   border: 1px solid #e0e0e0;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
 }
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
-  padding: 15px;
+  padding: 1.5rem;
   background-color: #3498db;
   color: white;
   display: flex;
@@ -713,175 +1022,179 @@ textarea {
 
 .card-header h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.2rem;
   font-weight: 600;
-  color: white;
 }
 
 .card-header .date {
-  font-size: 14px;
-  opacity: 0.9;
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 4px 8px;
-  border-radius: 4px;
+  font-size: 1rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
 }
 
 .card-content {
-  padding: 15px;
-  background-color: #f8f9fa;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .info-row {
   display: flex;
-  margin-bottom: 10px;
-  font-size: 14px;
-  padding: 8px;
-  background-color: white;
-  border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 0;
+  font-size: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  align-items: flex-start;
 }
 
-.info-row:last-child {
-  margin-bottom: 0;
+.info-row:hover {
+  background-color: #f1f3f5;
+  transform: translateX(5px);
 }
 
 .label {
   font-weight: 600;
   color: #2c3e50;
-  margin-left: 10px;
-  min-width: 80px;
-  border-right: 1px solid #e0e0e0;
-  padding-right: 10px;
+  margin-left: 1rem;
+  min-width: 120px;
+  border-right: 2px solid #e0e0e0;
+  padding-right: 1rem;
 }
 
 .value {
   color: #34495e;
   flex: 1;
-  padding-right: 10px;
+  padding-right: 1rem;
+  line-height: 1.5;
 }
 
+/* Card Actions */
 .card-actions {
-  padding: 15px;
-  border-top: 1px solid #e0e0e0;
   display: flex;
-  justify-content: flex-end;
-  background-color: white;
+  gap: 1rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
 }
 
-.view-btn {
-  padding: 8px 16px;
-  background-color: #3498db;
-  color: white;
+.card-actions button {
+  flex: 1;
+  padding: 0.8rem 1.2rem;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.3s;
   display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-actions button i {
+  font-size: 1rem;
+}
+
+.card-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* View Button */
+.view-btn {
+  background-color: #3498db;
 }
 
 .view-btn:hover {
   background-color: #2980b9;
 }
 
-.view-btn i {
-  font-size: 16px;
+/* Reply Button */
+.reply-btn {
+  background-color: #2ecc71;
 }
 
-/* Loading Skeleton */
-.loading-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+.reply-btn:hover {
+  background-color: #27ae60;
 }
 
-.skeleton-card {
-  background: white;
+/* Diagnosis Button */
+.diagnosis-btn {
+  background-color: #9b59b6;
+}
+
+.diagnosis-btn:hover {
+  background-color: #8e44ad;
+}
+
+/* Transfer Button */
+.transfer-btn {
+  background-color: #e67e22;
+}
+
+.transfer-btn:hover {
+  background-color: #d35400;
+}
+
+/* Form Action Buttons */
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+.submit-button,
+.cancel-button {
+  padding: 0.8rem 1.5rem;
+  border: none;
   border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
 }
 
-.skeleton-header {
-  height: 50px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-}
-
-.skeleton-content {
-  padding: 15px;
-}
-
-.skeleton-line {
-  height: 16px;
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: loading 1.5s infinite;
-  margin-bottom: 10px;
-  border-radius: 4px;
-}
-
-.skeleton-line:last-child {
-  margin-bottom: 0;
-}
-
-@keyframes loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .cards-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .info-row {
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .label {
-    border-right: none;
-    border-bottom: 1px solid #e0e0e0;
-    padding-bottom: 5px;
-    margin-left: 0;
-  }
-
-  .value {
-    padding-right: 0;
-  }
-}
-
-/* Add Examination Button */
-.add-examination-button {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.add-btn {
-  padding: 12px 24px;
+.submit-button {
   background-color: #2c3e50;
   color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  transition: background-color 0.3s;
 }
 
-.add-btn:hover {
+.submit-button:hover {
   background-color: #34495e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.submit-button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.cancel-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.cancel-button:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Modal Styles */
@@ -919,130 +1232,200 @@ textarea {
 .close-button {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 1.5rem;
   cursor: pointer;
   color: #666;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
 }
 
-/* Form in Modal */
+.close-button:hover {
+  color: #e74c3c;
+}
+
+/* Form Styles */
 .examination-form {
   display: grid;
   gap: 20px;
 }
-/* Details Modal Styles */
-.details-modal {
-  background: white;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  width: 90%;
-  max-width: 900px;
-  max-height: 85vh;
-  overflow-y: auto;
-  position: relative;
-  animation: fadeIn 0.3s ease-in-out;
+
+.form-row {
+  display: flex;
+  gap: 20px;
 }
 
-.details-content {
+.form-group {
+  flex: 1;
   margin-bottom: 20px;
 }
 
-.details-section {
-  margin-bottom: 25px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.details-section h3 {
-  margin: 0 0 15px;
+label {
+  display: block;
+  margin-bottom: 8px;
   color: #2c3e50;
-  font-size: 20px;
-  font-weight: 600;
-  border-bottom: 2px solid #3498db;
-  padding-bottom: 8px;
+  font-weight: 500;
 }
 
-.details-section .info-row {
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: #2c3e50;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Messages */
+.error-message {
+  color: #e74c3c;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #fde8e8;
+  border-radius: 4px;
+}
+
+.success-message {
+  color: #27ae60;
+  margin-bottom: 15px;
+  padding: 10px;
+  background-color: #e8f5e9;
+  border-radius: 4px;
+}
+
+/* Loading Skeleton */
+.loading-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+  gap: 2rem;
+}
+
+.skeleton-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  min-height: 300px;
+}
+
+.skeleton-header {
+  height: 80px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+.skeleton-content {
+  padding: 1.5rem;
+}
+
+.skeleton-line {
+  height: 20px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  margin-bottom: 1rem;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .label {
+    border-right: none;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 0.5rem;
+    margin-left: 0;
+    min-width: 100%;
+  }
+
+  .value {
+    padding-right: 0;
+  }
+
+  .card-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .card-actions button {
+    width: 100%;
+  }
+}
+
+.input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.input-group input {
+  flex: 1;
+}
+
+.remove-btn {
+  padding: 8px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
-  padding: 10px;
-  background: white;
-  border-radius: 6px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s;
+  justify-content: center;
+  transition: background-color 0.3s;
 }
 
-.details-section .info-row:hover {
-  transform: translateX(5px);
+.remove-btn:hover {
+  background-color: #c0392b;
 }
 
-.details-section .label {
-  font-weight: 600;
-  color: #2c3e50;
-  min-width: 150px;
-  border-right: 1px solid #e0e0e0;
-  padding-right: 15px;
-  margin-right: 15px;
-}
-
-.details-section .value {
-  color: #34495e;
-  flex: 1;
-  font-size: 15px;
-}
-
-.close-details-btn {
-  padding: 12px 24px;
+.add-input-btn {
+  padding: 8px 16px;
   background-color: #3498db;
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 16px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
   transition: background-color 0.3s;
 }
 
-.close-details-btn:hover {
+.add-input-btn:hover {
   background-color: #2980b9;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* Responsive adjustments for details modal */
-@media (max-width: 768px) {
-  .details-modal {
-    width: 95%;
-    padding: 20px;
-  }
-
-  .details-section .info-row {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .details-section .label {
-    border-right: none;
-    border-bottom: 1px solid #e0e0e0;
-    padding-bottom: 5px;
-    margin-right: 0;
-    min-width: auto;
-  }
-
-  .details-section .value {
-    padding-left: 0;
-  }
 }
 </style> 

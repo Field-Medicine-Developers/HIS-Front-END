@@ -24,11 +24,9 @@ api.interceptors.request.use(
       window.location.href = '/login';
       return Promise.reject('No token found');
     }
-    console.log('Request config:', config);
     return config;
   },
   error => {
-    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -36,7 +34,6 @@ api.interceptors.request.use(
 // إضافة interceptor للاستجابات
 api.interceptors.response.use(
   response => {
-    console.log('Response:', response);
     return response;
   },
   error => {

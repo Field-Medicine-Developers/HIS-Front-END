@@ -5,6 +5,7 @@ import MedicalStaff from '../views/MedicalStaff.vue'
 import WorkingHours from '../views/WorkingHours.vue'
 import Reviewers from '../views/Reviewers.vue'
 import ExaminationCommittee from '../views/ExaminationCommittee.vue'
+import MedicalCommittees from '../views/MedicalCommittees.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -82,6 +83,15 @@ const router = createRouter({
       meta: { 
         requiresAuth: true,
         title: 'الفحص الاولي'
+      }
+    },
+    {
+      path: '/medical-committees',
+      name: 'MedicalCommittees',
+      component: MedicalCommittees,
+      meta: { 
+        requiresAuth: true,
+        title: 'اللجان الطبية'
       }
     }
   ]

@@ -72,6 +72,13 @@ const logout = () => {
             <p class="nav-description">إدارة لجان الفحص والتقييم الطبي</p>
           </div>
         </router-link>
+        <router-link to="/medical-committees" class="nav-item">
+          <i class="pi pi-briefcase"></i>
+          <div class="nav-text">
+            <span>اللجان الطبية</span>
+            <p class="nav-description">إدارة لجان الفحص الطبية</p>
+          </div>
+        </router-link>
         <button @click="logout" class="nav-item logout-button">
           <i class="pi pi-sign-out text-red-600"></i>
           <div class="nav-text">

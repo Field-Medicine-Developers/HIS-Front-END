@@ -46,6 +46,11 @@ const items = ref([
     label: 'Staff Sections',
     icon: 'pi pi-hospital',
     to: '/staff-sections'
+  },
+  {
+    label: 'اللجان الطبية',
+    icon: 'pi pi-briefcase',
+    to: '/medical-committees'
   }
 ])
 </script>
