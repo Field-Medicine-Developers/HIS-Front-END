@@ -33,11 +33,11 @@
       </div>
       <div class="filter-group">
         <select v-model="filters.role" @change="onFilterChange">
-          <option value="">كل الأدوار</option>
-          <option v-for="role in roles" :key="role.value" :value="role.value">
-            {{ role.label }}
-          </option>
-        </select>
+         <option value="">كل الأدوار</option>
+         <option v-for="role in roles" :key="role.value" :value="role.value">
+           {{ role.label }}
+         </option>
+       </select>
       </div>
     </div>
 
@@ -154,18 +154,12 @@
 
           <div class="form-group">
             <label for="role">الدور</label>
-            <select 
-              id="role" 
-              v-model="formData.role"
-            >
-              <option 
-                v-for="role in roles" 
-                :key="role.value" 
-                :value="role.value"
-              >
-                {{ role.label }}
-              </option>
-            </select>
+            <select id="role" v-model="formData.role">
+              <option disabled value="">اختيار الدور</option>
+  <option v-for="role in roles" :key="role.value" :value="role.value">
+    {{ role.label }}
+  </option>
+</select>
           </div>
 
           <div v-if="errorMessage" class="error-message">
@@ -220,14 +214,14 @@ export default {
         thirdName: '',
         phoneNumber: '',
         password: '',
-        role: 1
+        role: ''
       },
       roles: [
-        { value: 1, label: 'مدير' },
-        { value: 2, label: 'طبيب' },
-        { value: 3, label: 'ممرض' },
-        { value: 4, label: 'مراجع' },
-        { value: 5, label: 'موظف استقبال' }
+        // { value: 1, label: 'مدير' },
+        // { value: 2, label: 'طبيب' },
+        // { value: 3, label: 'ممرض' },
+        // { value: 4, label: 'مراجع' },
+        // { value: 5, label: 'موظف استقبال' }
       ],
       errorMessage: '',
       successMessage: '',
@@ -252,6 +246,7 @@ export default {
   },
   created() {
     this.fetchUsers()
+    this.fetchRoles();
   },
   methods: {
     async fetchUsers() {
@@ -343,6 +338,17 @@ export default {
         this.errorMessage = 'حدث خطأ أثناء حذف المستخدم';
       }
     },
+    async fetchRoles() {
+    try {
+       const response = await this.$axios.get('http://his-api.tatwer.tech/RoleType');
+       this.roles = response.data.value.map(r => ({
+         value: r.key,
+         label: r.description.trim()
+       }));
+      } catch (error) {
+      console.error('خطأ في جلب الأدوار:', error);
+     }
+   },
     closeDeleteModal() {
       this.userToDelete = null;
       this.showDeleteModal = false;
@@ -848,7 +854,7 @@ select:focus {
   }
 }
 
-/* رأس المودال */
+/*  المودال */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -930,7 +936,6 @@ textarea:focus {
   outline: none;
 }
 
-/* حقل المدى */
 .range-inputs {
   display: flex;
   gap: 15px;
