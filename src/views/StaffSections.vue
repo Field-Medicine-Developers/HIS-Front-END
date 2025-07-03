@@ -1364,22 +1364,20 @@ textarea:focus {
 
 /* Page header styles */
 .page-header {
-  background: linear-gradient(to right, #f5faff, #ffffff);  padding: 25px 30px;
-  border-radius: 8px;
-  margin-bottom: 25px;
+  background: linear-gradient(to right, #f5faff, #ffffff);
+  padding: 20px 30px;
+  border-radius: 10px;
+  margin-bottom: 30px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  text-align: left;
-  border-left: 6px solid #2c3e50;
-  display: flex;
-  align-items: center;
+  border-right: 6px solid #2c3e50;
 }
 
 .page-header h1 {
   margin: 0;
   color: #2c3e50;
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  text-align: right;
 }
 
 

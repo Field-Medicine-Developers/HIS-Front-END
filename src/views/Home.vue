@@ -187,7 +187,6 @@ onMounted(async () => {
 
 .dashboard {
   padding: 2rem;
-  max-width: 1400px;
   margin: 0 auto;
   background: var(--primary-gradient);
   border-radius: 20px;

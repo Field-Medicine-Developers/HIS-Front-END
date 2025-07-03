@@ -87,14 +87,14 @@
               <td>{{ shift.startTime }}</td>
               <td>{{ shift.endTime }}</td>
               <td>{{ getDayName(shift.workingDay) }}</td>
-              <td>{{ shift.medicalStaff?.user?.firstName || '-' }}</td>
+              <td>{{ shift.medicalStaff?.user?.firstName || '-' }} {{ shift.medicalStaff?.user?.secondName || '-' }} {{ shift.medicalStaff?.user?.thirdName || '-' }}</td>
               <td>{{ shift.staffSections?.sectionName || '-' }}</td>
               <td>
                 <button @click="editShift(shift)" class="edit-btn">
-                  <i class="fas fa-edit"></i> تعديل
+                  تعديل
                 </button>
                 <button @click="deleteShift(shift)" class="delete-btn">
-                  <i class="fas fa-trash"></i> حذف
+                   حذف
                 </button>
               </td>
             </tr>

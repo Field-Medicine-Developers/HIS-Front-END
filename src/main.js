@@ -10,6 +10,10 @@ import 'primeicons/primeicons.css'
 import 'primeflex/primeflex.css'
 import api from './api/axios'
 import '@fortawesome/fontawesome-free/css/all.min.css';
+import 'toastr/build/toastr.min.css'; // استيراد toastr CSS
+import 'primeicons/primeicons.css';
+
+
 
 // Import PrimeVue Components
 import Button from 'primevue/button'

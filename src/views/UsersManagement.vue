@@ -1,48 +1,45 @@
 <template>
   <div class="users-management">
+    <!-- Page Header -->
     <div class="page-header">
-    <h1>إدارة المستخدمين</h1>
+      <h1>إدارة المستخدمين</h1>
     </div>
-    <!-- Loading Indicator -->
-    <!-- <div v-if="loading" class="loading-overlay">
-      <div class="loading-spinner"></div>
-      <p>جاري التحميل...</p>
-    </div> -->
-    
+
     <!-- Add User Button -->
     <div class="add-user-button">
-      <button @click="showModal = true" class="add-btn"><i class="pi pi-user-plus"></i> إضافة مستخدم جديد</button>
+      <button @click="openAddUserModal" class="add-btn">
+        <i class="pi pi-user-plus"></i> إضافة مستخدم جديد
+      </button>
     </div>
-    
+
     <!-- Filters -->
     <div class="filters">
       <div class="filter-group">
-        <input 
-          type="text" 
-          v-model="filters.fullName" 
+        <input
+          type="text"
+          v-model="filters.fullName"
           placeholder="البحث بالاسم"
-          @input="onFilterChange"
+          @input="debouncedFilterChange"
         />
       </div>
       <div class="filter-group">
-        <input 
-          type="text" 
-          v-model="filters.phoneNumber" 
+        <input
+          type="text"
+          v-model="filters.phoneNumber"
           placeholder="البحث برقم الهاتف"
-          @input="onFilterChange"
+          @input="debouncedFilterChange"
         />
       </div>
       <div class="filter-group">
-        <select v-model="filters.role" @change="onFilterChange">
-         <option value="">كل الأدوار</option>
-         <option v-for="role in roles" :key="role.value" :value="role.value">
-           {{ role.label }}
-         </option>
-       </select>
+        <select v-model="filters.role" @change="debouncedFilterChange">
+          <option value="">كل الأدوار</option>
+          <option v-for="role in roles" :key="role.value" :value="role.value">
+            {{ role.label }}
+          </option>
+        </select>
       </div>
     </div>
 
-    <!-- Users Table -->
     <div class="table-container">
       <table class="users-table">
         <thead>
@@ -64,16 +61,28 @@
               <td><div class="skeleton-cell"></div></td>
             </tr>
           </template>
-          <template v-else>
+          <template v-else-if="users.length">
             <tr v-for="user in users" :key="user.id">
-              <td>{{ user.firstName }} {{ user.secondName }} {{ user.thirdName }}</td>
-              <td>{{ user.phoneNumber }}</td>
-              <td>{{ getRoleLabel(user.role) }}</td>
-              <td>{{ new Date(user.createdAt).toLocaleDateString() }}</td>
               <td>
-                <button @click="editUser(user)" class="edit-btn">تعديل</button>
-                <button @click="deleteUser(user.id)" class="delete-btn">حذف</button>
+                {{ user.firstName || "" }} {{ user.secondName || "" }}
+                {{ user.thirdName || "" }}
               </td>
+              <td>{{ user.phoneNumber || "غير متوفر" }}</td>
+              <td>{{ getRoleLabel(user.role) }}</td>
+              <td>{{ formatDate(user.createdAt) }}</td>
+              <td>
+                <button @click="editUser(user)" class="edit-btn">
+                  <i class="pi pi-pencil"></i> تعديل
+                </button>
+                <button @click="deleteUser(user)" class="delete-btn">
+                  <i class="pi pi-trash"></i> حذف
+                </button>
+              </td>
+            </tr>
+          </template>
+          <template v-else>
+            <tr>
+              <td colspan="5" class="no-data">لا توجد بيانات للمستخدمين</td>
             </tr>
           </template>
         </tbody>
@@ -81,14 +90,29 @@
     </div>
 
     <!-- Pagination -->
-    <div class="pagination">
-      <button 
-        v-for="page in pagination.totalPages" 
+    <div class="pagination" v-if="pagination.totalPages > 1">
+      <button
+        :disabled="pagination.page === 1"
+        @click="onPageChange(pagination.page - 1)"
+        class="pagination-btn"
+      >
+        <i class="pi pi-angle-left"></i>
+      </button>
+      <button
+        v-for="page in pagination.totalPages"
         :key="page"
         @click="onPageChange(page)"
         :class="{ active: page === pagination.page }"
+        class="pagination-btn"
       >
         {{ page }}
+      </button>
+      <button
+        :disabled="pagination.page === pagination.totalPages"
+        @click="onPageChange(pagination.page + 1)"
+        class="pagination-btn"
+      >
+        <i class="pi pi-angle-right"></i>
       </button>
     </div>
 
@@ -96,84 +120,95 @@
     <div v-if="showModal" class="modal-overlay" @click="resetForm">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>{{ editingUser ? 'تعديل مستخدم' : 'إضافة مستخدم جديد' }}</h2>
-          <button class="close-button" @click="resetForm">&times;</button>
+          <h2>{{ editingUser ? "تعديل مستخدم" : "إضافة مستخدم جديد" }}</h2>
+          <button class="close-button" @click="resetForm">×</button>
         </div>
-        
+
         <form @submit.prevent="handleSubmit" class="user-form">
           <div class="form-group">
-            <label for="firstName">الاسم الأول</label>
-            <input 
-              type="text" 
-              id="firstName" 
-              v-model="formData.firstName" 
+            <label for="firstName">الاسم الأول *</label>
+            <input
+              type="text"
+              id="firstName"
+              v-model="formData.firstName"
               placeholder="الاسم الأول"
+              required
             />
           </div>
 
           <div class="form-group">
             <label for="secondName">الاسم الثاني</label>
-            <input 
-              type="text" 
-              id="secondName" 
-              v-model="formData.secondName" 
+            <input
+              type="text"
+              id="secondName"
+              v-model="formData.secondName"
               placeholder="الاسم الثاني"
             />
           </div>
 
           <div class="form-group">
             <label for="thirdName">الاسم الثالث</label>
-            <input 
-              type="text" 
-              id="thirdName" 
-              v-model="formData.thirdName" 
+            <input
+              type="text"
+              id="thirdName"
+              v-model="formData.thirdName"
               placeholder="الاسم الثالث"
             />
           </div>
 
           <div class="form-group">
             <label for="phoneNumber">رقم الهاتف *</label>
-            <input 
-              type="text" 
-              id="phoneNumber" 
-              v-model="formData.phoneNumber" 
-              placeholder="رقم الهاتف" 
+            <input
+              type="text"
+              id="phoneNumber"
+              v-model="formData.phoneNumber"
+              placeholder="رقم الهاتف"
               required
+              pattern="[0-9]{10,15}"
+              title="رقم الهاتف يجب أن يحتوي على 10-15 أرقام"
             />
           </div>
 
           <div class="form-group">
-            <label for="password">{{ editingUser ? 'كلمة المرور الجديدة (اختياري)' : 'كلمة المرور *' }}</label>
-            <input 
-              type="password" 
-              id="password" 
-              v-model="formData.password" 
+            <label for="password">{{
+              editingUser ? "كلمة المرور الجديدة (اختياري)" : "كلمة المرور *"
+            }}</label>
+            <input
+              type="password"
+              id="password"
+              v-model="formData.password"
               :placeholder="editingUser ? 'كلمة المرور الجديدة' : 'كلمة المرور'"
               :required="!editingUser"
             />
           </div>
 
           <div class="form-group">
-            <label for="role">الدور</label>
-            <select id="role" v-model="formData.role">
-              <option disabled value="">اختيار الدور</option>
-  <option v-for="role in roles" :key="role.value" :value="role.value">
-    {{ role.label }}
-  </option>
-</select>
-          </div>
-
-          <div v-if="errorMessage" class="error-message">
-            {{ errorMessage }}
-          </div>
-
-          <div v-if="successMessage" class="success-message">
-            {{ successMessage }}
+            <label for="role">الدور *</label>
+            <select id="role" v-model="formData.role" required>
+              <option disabled value="">اختر الدور</option>
+              <option
+                v-for="role in roles"
+                :key="role.value"
+                :value="role.value"
+              >
+                {{ role.label }}
+              </option>
+            </select>
           </div>
 
           <div class="form-actions">
-            <button type="submit" class="submit-button">{{ editingUser ? 'تحديث' : 'حفظ' }}</button>
-            <button type="button" class="cancel-button" @click="resetForm">إلغاء</button>
+            <button type="submit" class="submit-button" :disabled="loading">
+              <i v-if="loading" class="pi pi-spin pi-spinner"></i>
+              {{ editingUser ? "تحديث" : "حفظ" }}
+            </button>
+            <button
+              type="button"
+              class="cancel-button"
+              @click="resetForm"
+              :disabled="loading"
+            >
+              إلغاء
+            </button>
           </div>
         </form>
       </div>
@@ -184,19 +219,33 @@
       <div class="modal-content delete-modal" @click.stop>
         <div class="modal-header">
           <h2>تأكيد الحذف</h2>
-          <button class="close-button" @click="closeDeleteModal">&times;</button>
+          <button class="close-button" @click="closeDeleteModal">×</button>
         </div>
-        
         <div class="delete-modal-content">
           <div class="delete-icon">
-            <i class="fas fa-exclamation-triangle"></i>
+            <i class="pi pi-exclamation-triangle"></i>
           </div>
-          <p class="delete-message">هل أنت متأكد من حذف المستخدم "{{ userToDelete?.firstName }} {{ userToDelete?.secondName }} {{ userToDelete?.thirdName }}"؟</p>
+          <p class="delete-message">
+            هل أنت متأكد من حذف المستخدم "{{ userToDelete?.firstName || "" }}
+            {{ userToDelete?.secondName || "" }}
+            {{ userToDelete?.thirdName || "" }}"؟
+          </p>
           <p class="delete-warning">هذا الإجراء لا يمكن التراجع عنه</p>
-          
           <div class="delete-actions">
-            <button @click="confirmDelete" class="confirm-delete-btn">حذف</button>
-            <button @click="closeDeleteModal" class="cancel-delete-btn">إلغاء</button>
+            <button
+              @click="confirmDelete"
+              class="confirm-delete-btn"
+              :disabled="loading"
+            >
+              <i v-if="loading" class="pi pi-spin pi-spinner"></i> حذف
+            </button>
+            <button
+              @click="closeDeleteModal"
+              class="cancel-delete-btn"
+              :disabled="loading"
+            >
+              إلغاء
+            </button>
           </div>
         </div>
       </div>
@@ -205,123 +254,161 @@
 </template>
 
 <script>
+import toastr from "toastr";
+import "toastr/build/toastr.min.css";
+import { debounce } from "lodash";
+
 export default {
-  name: 'UsersManagement',
+  name: "UsersManagement",
   data() {
     return {
       formData: {
-        firstName: '',
-        secondName: '',
-        thirdName: '',
-        phoneNumber: '',
-        password: '',
-        role: ''
+        firstName: "",
+        secondName: "",
+        thirdName: "",
+        phoneNumber: "",
+        password: "",
+        role: "",
       },
-      roles: [
-        // { value: 1, label: 'مدير' },
-        // { value: 2, label: 'طبيب' },
-        // { value: 3, label: 'ممرض' },
-        // { value: 4, label: 'مراجع' },
-        // { value: 5, label: 'موظف استقبال' }
-      ],
-      errorMessage: '',
-      successMessage: '',
+      roles: [],
       users: [],
       loading: false,
       totalRecords: 0,
       pagination: {
         page: 1,
         pageSize: 10,
-        totalPages: 0
+        totalPages: 0,
       },
       filters: {
-        fullName: '',
-        phoneNumber: '',
-        role: null
+        fullName: "",
+        phoneNumber: "",
+        role: "",
       },
       editingUser: null,
       showModal: false,
       showDeleteModal: false,
-      userToDelete: null
-    }
+      userToDelete: null,
+    };
   },
   created() {
-    this.fetchUsers()
+    // إعداد toastr
+    toastr.options = {
+      closeButton: true,
+      progressBar: true,
+      positionClass: "toast-top-right",
+      timeOut: 5000,
+      rtl: true,
+    };
+
+    // جلب البيانات عند تحميل المكون
+    this.fetchUsers();
     this.fetchRoles();
+
+    // إعداد debounce لتقليل عدد الطلبات أثناء البحث
+    this.debouncedFilterChange = debounce(this.onFilterChange, 500);
   },
   methods: {
     async fetchUsers() {
-      console.log('Starting to fetch users...')
       try {
-        this.loading = true
+        this.loading = true;
         const params = {
           pageNumber: this.pagination.page,
           pageSize: this.pagination.pageSize,
-          fullName: this.filters.fullName,
-          phoneNumber: this.filters.phoneNumber,
-          role: this.filters.role === '' ? null : this.filters.role
-        }
+          fullName: this.filters.fullName?.trim() || null,
+          phoneNumber: this.filters.phoneNumber?.trim() || null,
+          role: this.filters.role === "" ? null : Number(this.filters.role),
+        };
 
-        console.log('Request params:', params)
-        console.log('Request URL:', '/Users/GetAllUsers')
-
-        const response = await this.$axios.get('/Users/GetAllUsers', { 
+        const response = await this.$axios.get("/Users/GetAllUsers", {
           params,
-          validateStatus: function (status) {
-            return status >= 200 && status < 500 // Accept all status codes less than 500
-          }
-        })
-
-        console.log('Response received:', response)
+          validateStatus: (status) => status >= 200 && status < 500,
+        });
 
         if (response.status === 200) {
-          this.users = response.data.items || []
-          this.totalRecords = response.data.totalCount || 0
-          this.pagination.totalPages = response.data.totalPages || 0
-          console.log('Users data:', this.users)
+          this.users =
+            response.data.items?.filter((user) => user && user.id) || [];
+          this.totalRecords = response.data.totalCount || 0;
+          this.pagination.totalPages = response.data.totalPages || 0;
         } else {
-          console.error('Unexpected response status:', response.status)
-          this.errorMessage = 'حدث خطأ أثناء جلب بيانات المستخدمين'
+          toastr.error("حدث خطأ أثناء جلب بيانات المستخدمين", "خطأ");
         }
       } catch (error) {
-        console.error('Error in fetchUsers:', error)
-        if (error.code === 'ERR_NETWORK') {
-          this.errorMessage = 'تعذر الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت'
-        } else if (error.response) {
-          this.errorMessage = error.response.data?.message || 'حدث خطأ أثناء جلب بيانات المستخدمين'
-        } else {
-          this.errorMessage = 'حدث خطأ غير متوقع'
-        }
+        const message =
+          error.code === "ERR_NETWORK"
+            ? "تعذر الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت"
+            : error.response?.data?.message || "حدث خطأ غير متوقع";
+        toastr.error(message, "خطأ");
       } finally {
-        this.loading = false
+        this.loading = false;
+      }
+    },
+    async fetchRoles() {
+      try {
+        const response = await this.$axios.get(
+          "http://his-api.tatwer.tech/RoleType"
+        );
+        this.roles =
+          response.data.value?.map((r) => ({
+            value: r.key,
+            label: r.description?.trim() || "غير محدد",
+          })) || [];
+      } catch (error) {
+        toastr.error("خطأ في جلب الأدوار", "خطأ");
       }
     },
     async handleSubmit() {
       try {
-        this.errorMessage = '';
-        this.successMessage = '';
+        this.loading = true;
 
-        if (!this.formData.phoneNumber || !this.formData.password) {
-          this.errorMessage = 'رقم الهاتف وكلمة المرور مطلوبان';
+        // التحقق من الحقول المطلوبة
+        if (!this.formData.firstName?.trim()) {
+          toastr.error("الاسم الأول مطلوب", "خطأ");
+          return;
+        }
+        if (!this.formData.phoneNumber?.trim()) {
+          toastr.error("رقم الهاتف مطلوب", "خطأ");
+          return;
+        }
+        if (!this.formData.role) {
+          toastr.error("الدور مطلوب", "خطأ");
+          return;
+        }
+        if (!this.editingUser && !this.formData.password?.trim()) {
+          toastr.error("كلمة المرور مطلوبة عند إنشاء مستخدم جديد", "خطأ");
           return;
         }
 
+        // إعداد البيانات
+        const payload = {
+          firstName: this.formData.firstName.trim(),
+          secondName: this.formData.secondName?.trim() || null,
+          thirdName: this.formData.thirdName?.trim() || null,
+          phoneNumber: this.formData.phoneNumber.trim(),
+          role: Number(this.formData.role),
+          ...(this.formData.password?.trim() && {
+            password: this.formData.password.trim(),
+          }),
+        };
+
         if (this.editingUser) {
-          await this.$axios.put(`/Users/${this.editingUser.id}`, this.formData);
-          this.successMessage = 'تم تحديث المستخدم بنجاح';
+          await this.$axios.put(`/Users/${this.editingUser.id}`, payload);
+          toastr.success("تم تحديث المستخدم بنجاح", "نجاح");
         } else {
-          await this.$axios.post('/Users/CreateUser', this.formData);
-          this.successMessage = 'تم إنشاء المستخدم بنجاح';
+          await this.$axios.post("/Users/CreateUser", payload);
+          toastr.success("تم إنشاء المستخدم بنجاح", "نجاح");
         }
 
         this.resetForm();
         this.fetchUsers();
       } catch (error) {
-        this.errorMessage = error.response?.data?.message || 'حدث خطأ أثناء حفظ المستخدم';
+        const message =
+          error.response?.data?.message || "حدث خطأ أثناء حفظ المستخدم";
+        toastr.error(message, "خطأ");
+      } finally {
+        this.loading = false;
       }
     },
-    async deleteUser(userId) {
-      const user = this.users.find(u => u.id === userId);
+    async deleteUser(user) {
       if (user) {
         this.userToDelete = user;
         this.showDeleteModal = true;
@@ -329,290 +416,240 @@ export default {
     },
     async confirmDelete() {
       if (!this.userToDelete) return;
-      
+
       try {
+        this.loading = true;
         await this.$axios.delete(`/Users/${this.userToDelete.id}`);
-        this.successMessage = 'تم حذف المستخدم بنجاح';
+        toastr.success("تم حذف المستخدم بنجاح", "نجاح");
         this.fetchUsers();
         this.closeDeleteModal();
       } catch (error) {
-        this.errorMessage = 'حدث خطأ أثناء حذف المستخدم';
+        toastr.error("حدث خطأ أثناء حذف المستخدم", "خطأ");
+      } finally {
+        this.loading = false;
       }
     },
-    async fetchRoles() {
-    try {
-       const response = await this.$axios.get('http://his-api.tatwer.tech/RoleType');
-       this.roles = response.data.value.map(r => ({
-         value: r.key,
-         label: r.description.trim()
-       }));
-      } catch (error) {
-      console.error('خطأ في جلب الأدوار:', error);
-     }
-   },
-    closeDeleteModal() {
-      this.userToDelete = null;
-      this.showDeleteModal = false;
+    openAddUserModal() {
+      this.editingUser = null;
+      this.formData = {
+        firstName: "",
+        secondName: "",
+        thirdName: "",
+        phoneNumber: "",
+        password: "",
+        role: "",
+      };
+      this.showModal = true;
     },
     editUser(user) {
       this.editingUser = user;
       this.formData = {
-        firstName: user.firstName || '',
-        secondName: user.secondName || '',
-        thirdName: user.thirdName || '',
-        phoneNumber: user.phoneNumber || '',
-        password: '', // لا نعرض كلمة المرور
-        role: user.role
+        firstName: user.firstName || "",
+        secondName: user.secondName || "",
+        thirdName: user.thirdName || "",
+        phoneNumber: user.phoneNumber || "",
+        password: "",
+        role: user.role || "",
       };
       this.showModal = true;
     },
     resetForm() {
       this.editingUser = null;
       this.formData = {
-        firstName: '',
-        secondName: '',
-        thirdName: '',
-        phoneNumber: '',
-        password: '',
-        role: 1
+        firstName: "",
+        secondName: "",
+        thirdName: "",
+        phoneNumber: "",
+        password: "",
+        role: "",
       };
       this.showModal = false;
     },
+    closeDeleteModal() {
+      this.userToDelete = null;
+      this.showDeleteModal = false;
+    },
     onPageChange(page) {
-      this.pagination.page = page;
-      this.fetchUsers();
+      if (page >= 1 && page <= this.pagination.totalPages) {
+        this.pagination.page = page;
+        this.fetchUsers();
+      }
     },
     onFilterChange() {
       this.pagination.page = 1;
       this.fetchUsers();
     },
     getRoleLabel(roleValue) {
-      const role = this.roles.find(r => r.value === roleValue);
-      return role ? role.label : 'غير محدد';
-    }
-  }
-}
+      const role = this.roles.find((r) => r.value === roleValue);
+      return role ? role.label : "غير محدد";
+    },
+    formatDate(dateString) {
+      if (!dateString) return "غير متوفر";
+      return new Date(dateString).toLocaleDateString("ar-EG", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    },
+  },
+};
 </script>
-
 
 <style scoped>
 .users-management {
   padding: 20px;
-  max-width: 100%;
   margin: 0 auto;
+  font-family: "Tajawal", sans-serif;
 }
 
-h1, h2 {
-  text-align: center;
-  color: #2c3e50;
+.page-header {
+  background: linear-gradient(to right, #f5faff, #ffffff);
+  padding: 20px 30px;
+  border-radius: 10px;
   margin-bottom: 30px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  text-align: right;
+  border-right: 6px solid #2c3e50;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #2c3e50;
+  font-size: 28px;
+  font-weight: 700;
 }
 
 /* Filters */
 .filters {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.filter-group {
-  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
 }
 
 .filter-group input,
 .filter-group select {
   width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 15px;
+  background-color: #ffffff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  border-color: #32817d;
+  box-shadow: 0 0 8px rgba(50, 129, 125, 0.2);
+  outline: none;
 }
 
 /* Table */
 .table-container {
-  margin-bottom: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   overflow-x: auto;
+  margin-bottom: 30px;
 }
 
 .users-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
 }
 
 .users-table th,
 .users-table td {
-  padding: 12px;
+  padding: 15px;
   text-align: right;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #e0e6ed;
 }
 
 .users-table th {
   background-color: #f8f9fa;
   font-weight: 600;
+  color: #2c3e50;
 }
 
 .users-table tr:hover {
-  background-color: #f8f9fa;
+  background-color: #f5f7fa;
+}
+
+.no-data {
+  text-align: center;
+  padding: 20px;
+  color: #7f8c8d;
+  font-size: 16px;
 }
 
 /* Pagination */
 .pagination {
   display: flex;
   justify-content: center;
-  gap: 5px;
-  margin-bottom: 20px;
+  gap: 8px;
+  margin-bottom: 30px;
 }
 
-.pagination button {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background: white;
+.pagination-btn {
+  padding: 8px 14px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  background: #ffffff;
   cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 
-.pagination button.active {
+.pagination-btn:hover:not(:disabled) {
+  background-color: #32817d;
+  color: #ffffff;
+  border-color: #32817d;
+}
+
+.pagination-btn.active {
   background-color: #2c3e50;
-  color: white;
+  color: #ffffff;
   border-color: #2c3e50;
 }
 
-/* Form */
-.form-container {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.pagination-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
-.user-form {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
-  margin-bottom: 8px;
-  color: #2c3e50;
-  font-weight: 500;
-}
-
-input, select {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  transition: border-color 0.3s;
-}
-
-input:focus, select:focus {
-  outline: none;
-  border-color: #2c3e50;
-}
-
-/* Buttons */
-.form-actions {
-  grid-column: 1 / -1;
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-}
-
-.submit-button,
-.cancel-button {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 4px;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.submit-button {
-  background-color: #2c3e50;
-  color: white;
-}
-
-.submit-button:hover {
-  background-color: #34495e;
-}
-
-.cancel-button {
-  background-color: #e74c3c;
-  color: white;
-}
-
-.cancel-button:hover {
-  background-color: #c0392b;
-}
-
-.edit-btn,
-.delete-btn {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-left: 5px;
-}
-
-.edit-btn {
-  background-color: #3498db;
-  color: white;
-}
-
-.delete-btn {
-  background-color: #e74c3c;
-  color: white;
-}
-
-/* Messages */
-.error-message {
-  color: #e74c3c;
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: #fde8e8;
-  border-radius: 4px;
-  grid-column: 1 / -1;
-}
-
-.success-message {
-  color: #27ae60;
-  margin-bottom: 15px;
-  padding: 10px;
-  background-color: #e8f5e9;
-  border-radius: 4px;
-  grid-column: 1 / -1;
-}
-
-/* Modal Styles */
+/* Modal */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   z-index: 1000;
 }
 
 .modal-content {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 90%;
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  width: 95%;
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
+  animation: fadeInUp 0.3s ease-in-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .modal-header {
@@ -620,101 +657,120 @@ input:focus, select:focus {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  border-bottom: 1px solid #e0e6ed;
+  padding-bottom: 10px;
+}
+
+.modal-header h2 {
+  font-size: 22px;
+  color: #2c3e50;
+  margin: 0;
 }
 
 .close-button {
   background: none;
   border: none;
   font-size: 24px;
+  color: #888;
   cursor: pointer;
-  color: #666;
+  transition: color 0.3s ease;
 }
 
+.close-button:hover {
+  color: #e74c3c;
+}
+
+/* Form */
+.user-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  font-size: 15px;
+  background-color: #ffffff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #32817d;
+  box-shadow: 0 0 8px rgba(50, 129, 125, 0.2);
+  outline: none;
+}
+
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+}
 .add-user-button {
   margin-bottom: 20px;
   text-align: left;
 }
 
-.add-btn {
-  padding: 10px 20px;
-  background-color: #2c3e50;
-  color: white;
+.submit-button,
+.cancel-button {
+  padding: 12px 24px;
   border: none;
-  border-radius: 4px;
-  cursor: pointer;
+  border-radius: 6px;
   font-size: 16px;
-}
-
-.add-btn:hover {
-  background-color: #34495e;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .users-management {
-    padding: 10px;
-  }
-  
-  .form-container {
-    padding: 20px;
-  }
-
-  .filters {
-    flex-direction: column;
-  }
-
-  .form-actions {
-    flex-direction: column;
-  }
-
-  .submit-button,
-  .cancel-button {
-    width: 100%;
-  }
-
-  .modal-content {
-    width: 95%;
-    padding: 20px;
-  }
-}
-
-/* Loading Styles */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  z-index: 1001;
+  gap: 8px;
 }
 
-.loading-spinner {
-  width: 50px;
-  height: 50px;
-  border: 5px solid #f3f3f3;
-  border-top: 5px solid #2c3e50;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
+.submit-button {
+  background-color: #3498db;
+  color: #ffffff;
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.submit-button:hover:not(:disabled) {
+  background-color: #166da7;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.loading-overlay p {
-  color: #2c3e50;
-  font-size: 18px;
-  font-weight: 500;
+.submit-button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
 }
 
-/* Delete Modal Styles */
+.cancel-button {
+  background-color: #e74c3c;
+  color: #ffffff;
+}
+
+.cancel-button:hover:not(:disabled) {
+  background-color: #c0392b;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.cancel-button:disabled {
+  background-color: #95a5a6;
+  cursor: not-allowed;
+}
+
+/* Delete Modal */
 .delete-modal {
   max-width: 400px;
   text-align: center;
@@ -738,6 +794,7 @@ input:focus, select:focus {
 
 .delete-warning {
   color: #e74c3c;
+  font-size: 14px;
   margin-bottom: 20px;
 }
 
@@ -745,38 +802,66 @@ input:focus, select:focus {
   display: flex;
   justify-content: center;
   gap: 15px;
-  margin-top: 20px;
 }
 
 .confirm-delete-btn,
 .cancel-delete-btn {
   padding: 10px 25px;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 16px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.3s ease;
 }
 
 .confirm-delete-btn {
   background-color: #e74c3c;
-  color: white;
+  color: #ffffff;
 }
 
-.confirm-delete-btn:hover {
+.confirm-delete-btn:hover:not(:disabled) {
   background-color: #c0392b;
 }
 
 .cancel-delete-btn {
   background-color: #95a5a6;
-  color: white;
+  color: #ffffff;
 }
 
-.cancel-delete-btn:hover {
+.cancel-delete-btn:hover:not(:disabled) {
   background-color: #7f8c8d;
 }
 
-/* Skeleton Loading Styles */
+/* Loading Styles */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 1001;
+}
+
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-overlay p {
+  color: #2c3e50;
+  font-size: 18px;
+  font-weight: 500;
+  margin-top: 15px;
+}
+
+/* Skeleton Loading */
 .skeleton-row {
   animation: skeleton-loading 1s linear infinite alternate;
 }
@@ -798,186 +883,82 @@ input:focus, select:focus {
   }
 }
 
-
-input,
-select {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #dcdfe6;
-  border-radius: 6px;
-  font-size: 15px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
-}
-
-input:focus,
-select:focus {
-  border-color: #32817d;
-  box-shadow: 0 0 0 4px rgba(50, 129, 125, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
-  outline: none;
-}
-
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  width: 95%;
-  max-width: 850px;
-  max-height: 90vh;
-  overflow-y: auto;
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow:
-    0 15px 30px rgba(0, 0, 0, 0.15),
-    0 4px 12px rgba(0, 0, 0, 0.05);
-  animation: fadeInUp 0.3s ease-in-out;
-  border: 1px solid #ccc;
-  position: relative;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/*  المودال */
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-}
-
-.modal-header h2 {
-  font-size: 22px;
-  color: #2c3e50;
-  margin: 0;
-}
-
-.close-button {
-  background: none;
+/* Buttons */
+.add-btn,
+.edit-btn,
+.delete-btn {
+  padding: 10px 20px;
+  margin-left: 1rem;
   border: none;
-  font-size: 26px;
-  color: #888;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.close-button:hover {
-  color: #e74c3c;
-}
-
-/* الحقول */
-.private-inputs-section {
-  margin-bottom: 25px;
-}
-
-.input-group {
-  padding: 20px;
-  border: 2px solid #ddd;
-  border-radius: 10px;
-  background-color: #fafafa;
-  margin-bottom: 20px;
-}
-
-.input-group:nth-child(even) {
-  background-color: #f0f4f8;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 6px;
-}
-
-input,
-select,
-textarea,
-.form-group input,
-.form-group select,
-.form-group textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #32817d;
   border-radius: 6px;
-  font-size: 15px;
-  background-color: #ffffff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
-  box-sizing: border-box;
-}
-
-input:focus,
-select:focus,
-textarea:focus {
-  border-color: #32817d;
-  box-shadow: 0 0 0 4px rgba(50, 129, 125, 0.15), 0 2px 6px rgba(0, 0, 0, 0.08);
-  outline: none;
-}
-
-.range-inputs {
-  display: flex;
-  gap: 15px;
-  justify-content: space-between;
-}
-
-.range-inputs > div {
-  flex: 1;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 24px;
   cursor: pointer;
-  color: #000000;
-  transition: color 0.3s ease;
-}
-
-.close-button:hover {
-  color: #e74c3c; 
-}
-
-/* Page header styles */
-.page-header {
-  background: linear-gradient(to right, #f5faff, #ffffff);  padding: 25px 30px;
-  border-radius: 8px;
-  margin-bottom: 25px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  text-align: left;
-  border-left: 6px solid #2c3e50;
-  display: flex;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  display: inline-flex;
   align-items: center;
+  gap: 8px;
 }
 
-.page-header h1 {
-  margin: 0;
-  color: #2c3e50;
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
+.add-btn {
+  background-color: #1b365c;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-</style> 
+.add-btn:hover {
+  background-color: #324053;
+}
+
+.edit-btn {
+  background-color: #3498db;
+  color: #ffffff;
+}
+
+.edit-btn:hover {
+  background-color: #2980b9;
+}
+
+.delete-btn {
+  background-color: #e74c3c;
+  color: #ffffff;
+}
+
+.delete-btn:hover {
+  background-color: #c0392b;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .users-management {
+    padding: 15px;
+  }
+
+  .filters {
+    grid-template-columns: 1fr;
+  }
+
+  .user-form {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .submit-button,
+  .cancel-button {
+    width: 100%;
+  }
+
+  .modal-content {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .users-table th,
+  .users-table td {
+    padding: 10px;
+    font-size: 14px;
+  }
+}
+</style>
